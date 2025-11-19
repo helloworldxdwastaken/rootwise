@@ -97,21 +97,33 @@ export function ChatHistorySection() {
     e.preventDefault();
     if (!messageInput.trim() || !selectedSession) return;
 
+    const userMsg = messageInput;
+    setMessageInput("");
     setSending(true);
+
     try {
-      const response = await fetch("/api/chat/message", {
+      // Call AI response endpoint (saves user message + generates AI response)
+      const response = await fetch("/api/chat/ai-response", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: selectedSession,
-          role: "USER",
-          content: messageInput,
+          userMessage: userMsg,
         }),
       });
 
       if (response.ok) {
-        setMessageInput("");
+        const data = await response.json();
+        
+        // Reload messages to show both user message and AI response
         loadMessages(selectedSession);
+        
+        // If AI extracted conditions, show notification
+        if (data.extracted?.conditions?.length > 0) {
+          console.log("Auto-added conditions:", data.extracted.conditions);
+        }
+      } else {
+        console.error("AI response failed");
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -242,7 +254,7 @@ export function ChatHistorySection() {
                 </Button>
               </div>
               <p className="text-xs text-[#222222]/60 mt-2">
-                Note: AI responses not yet integrated. Messages are stored for future use.
+                💡 AI-powered responses using Google Gemini. Messages auto-save to your history.
               </p>
             </form>
           </>
