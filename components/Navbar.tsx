@@ -43,13 +43,13 @@ export function Navbar() {
             : "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
         }}
         className={cn(
-          "flex w-full max-w-6xl items-center gap-6 rounded-full border border-white/40 px-6 py-3 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 shadow-lg",
+          "flex w-full max-w-6xl items-center justify-between gap-6 rounded-full border border-white/40 px-6 py-3 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 shadow-lg",
           scrolled 
             ? "bg-white/85 shadow-xl" 
             : "bg-white/70"
         )}
       >
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-[#174D3A] group">
+        <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-[#174D3A] group md:flex-shrink-0">
           <motion.span
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.6 }}
@@ -60,7 +60,7 @@ export function Navbar() {
           <span className="text-base hidden sm:inline">Rootwise</span>
         </Link>
 
-        <nav className="mx-auto hidden items-center gap-1 text-sm font-medium text-[#174D3A] md:flex">
+        <nav className="hidden items-center gap-1 text-sm font-medium text-[#174D3A] md:flex md:flex-1 md:justify-center">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -76,7 +76,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 md:flex md:flex-shrink-0">
           {status === "authenticated" ? (
             <>
               <Link

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, MessageCircle, User, Sparkles } from "lucide-react";
+import { Send, RotateCcw, MessageCircle, User, Sparkles, Globe } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,8 @@ type Message = {
   id: string;
   role: "guide" | "user";
   content: string;
+  isTyping?: boolean;
+  citations?: string[];
 };
 
 type FlowStep = {
@@ -74,14 +76,38 @@ const goalFlow: FlowStep[] = [
   },
 ];
 
-const initialMessages: Message[] = [
+type DemoMessage = {
+  role: "guide" | "user";
+  content: string;
+  delay: number;
+  citations?: string[];
+};
+
+const demoConversation: DemoMessage[] = [
   {
-    id: "intro",
     role: "guide",
-    content:
-      "Hi, I'm Rootwise. Are we working through something that's bothering you, or moving toward a gentle goal?",
+    content: "Hi, I'm Rootwise. What's going on in your body today?",
+    delay: 0,
+  },
+  {
+    role: "user",
+    content: "I get menstrual cramps. Any suggestions?",
+    delay: 2000,
+  },
+  {
+    role: "guide",
+    content: "Got you. Warm foot baths can relax pelvic muscles, and some research supports it. Ginger tea and magnesium-rich foods may also ease cramping for many people.",
+    delay: 1500,
+    citations: ["Mayo Clinic", "American Hospital"],
+  },
+  {
+    role: "guide",
+    content: "I'll put these into a gentle plan with safety notes.\n\nIf the pain becomes intense or bleeding is heavy, it's important to get checked quickly.",
+    delay: 1500,
   },
 ];
+
+const initialMessages: Message[] = [];
 
 export function ConversationFlow() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -91,7 +117,56 @@ export function ConversationFlow() {
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>({});
   const [profileDraft, setProfileDraft] = useState<ProfileDraft>({});
   const [isComplete, setIsComplete] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [demoIndex, setDemoIndex] = useState(0);
+  const [isDemoRunning, setIsDemoRunning] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-play demo conversation
+  useEffect(() => {
+    playDemoConversation();
+  }, []);
+
+  function playDemoConversation() {
+    let currentDelay = 500; // Start delay
+    
+    demoConversation.forEach((msg, index) => {
+      currentDelay += msg.delay;
+      
+      setTimeout(() => {
+        if (msg.role === "guide") {
+          setIsTyping(true);
+          setTimeout(() => {
+            setIsTyping(false);
+            // Add message fully formed (no typing animation to prevent layout shift)
+            setMessages((prev) => [...prev, {
+              id: `demo-${index}-${Date.now()}`,
+              role: "guide",
+              content: msg.content,
+              citations: msg.citations,
+            }]);
+          }, 800);
+        } else {
+          // User messages appear instantly
+          setMessages((prev) => [...prev, {
+            id: `demo-user-${index}-${Date.now()}`,
+            role: "user",
+            content: msg.content,
+          }]);
+        }
+        
+        if (index === demoConversation.length - 1) {
+          setTimeout(() => {
+            setIsComplete(true);
+            // Auto-restart after 5 seconds
+            setTimeout(() => {
+              handleReset();
+            }, 5000);
+          }, 2000);
+        }
+      }, currentDelay);
+    });
+  }
 
   const steps = useMemo(() => {
     if (mode === "issue") return issueFlow;
@@ -101,12 +176,29 @@ export function ConversationFlow() {
 
   const currentStep = steps[stepIndex];
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // Removed auto-scroll to prevent page jumping
 
   function appendMessage(message: Message) {
     setMessages((prev) => [...prev, message]);
+  }
+
+  function appendMessageWithTyping(message: Message, delay: number = 800) {
+    // Show typing indicator
+    setIsTyping(true);
+    
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, { ...message, isTyping: true }]);
+      
+      // After message appears, simulate typing effect completion
+      setTimeout(() => {
+        setMessages((prev) => 
+          prev.map((msg) => 
+            msg.id === message.id ? { ...msg, isTyping: false } : msg
+          )
+        );
+      }, 50);
+    }, delay);
   }
 
   function handleModeSelect(selected: ConversationMode) {
@@ -117,30 +209,39 @@ export function ConversationFlow() {
     setSessionDraft({});
     setProfileDraft({});
     setIsComplete(false);
-    setMessages([
-      ...initialMessages,
-      {
-        id: crypto.randomUUID(),
-        role: "user",
-        content:
-          selected === "issue"
-            ? "I'm working through something bothering me."
-            : "I'm working on a gentle goal.",
-      },
-      {
-        id: crypto.randomUUID(),
-        role: "guide",
-        content:
-          selected === "issue"
-            ? "Thanks for trusting me with it. I'll ask a couple of quick things to tailor suggestions."
-            : "Great! I'll keep the vibe encouraging. I'll ask a couple of quick things so we can guide you softly.",
-      },
-      {
-        id: crypto.randomUUID(),
-        role: "guide",
-        content: (selected === "issue" ? issueFlow : goalFlow)[0].question,
-      },
-    ]);
+    
+    // User message appears immediately
+    const userMessage = {
+      id: crypto.randomUUID(),
+      role: "user" as const,
+      content:
+        selected === "issue"
+          ? "I'm working through something bothering me."
+          : "I'm working on a gentle goal.",
+    };
+    
+    const response1 = {
+      id: crypto.randomUUID(),
+      role: "guide" as const,
+      content:
+        selected === "issue"
+          ? "Thanks for trusting me with it. I'll ask a couple of quick things to tailor suggestions."
+          : "Great! I'll keep the vibe encouraging. I'll ask a couple of quick things so we can guide you softly.",
+    };
+    
+    const response2 = {
+      id: crypto.randomUUID(),
+      role: "guide" as const,
+      content: (selected === "issue" ? issueFlow : goalFlow)[0].question,
+    };
+    
+    setMessages([...initialMessages, userMessage]);
+    
+    // Add responses with typing delay
+    appendMessageWithTyping(response1, 1000);
+    setTimeout(() => {
+      appendMessageWithTyping(response2, 1200);
+    }, 2200);
   }
 
   function handleSubmit() {
@@ -173,36 +274,46 @@ export function ConversationFlow() {
     const nextIndex = stepIndex + 1;
     if (nextIndex < steps.length) {
       const nextStep = steps[nextIndex];
-      appendMessage({
+      appendMessageWithTyping({
         id: crypto.randomUUID(),
         role: "guide",
         content: nextStep.question,
-      });
+      }, 1000);
       setStepIndex(nextIndex);
       return;
     }
 
-    finalizeConversation();
+    setTimeout(() => {
+      finalizeConversation();
+    }, 800);
   }
 
   function finalizeConversation() {
     setIsComplete(true);
-    appendMessage({
+    appendMessageWithTyping({
       id: crypto.randomUUID(),
       role: "guide",
       content:
         "Perfect. I'll tuck that away and draft a gentle plan with foods, herbs, rituals and safety notes tailored to you.",
-    });
+    }, 1000);
   }
 
   function handleReset() {
-    setMessages(initialMessages);
+    setMessages([]);
     setMode(null);
     setSessionDraft({});
     setProfileDraft({});
     setStepIndex(0);
     setInputValue("");
     setIsComplete(false);
+    setIsDemoRunning(false);
+    setDemoIndex(0);
+    
+    // Restart demo
+    setTimeout(() => {
+      setIsDemoRunning(true);
+      playDemoConversation();
+    }, 500);
   }
 
   const sessionSummary = useMemo(() => {
@@ -237,7 +348,43 @@ export function ConversationFlow() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]">
-      <Card className="space-y-6 bg-white/30 flex flex-col" hoverEffect={false}>
+      <div className="relative">
+        {/* Animated gradient balls behind chat - contained */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+          <motion.div
+            animate={{
+              y: [0, -20, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="absolute -left-24 top-1/4 w-[22rem] h-[22rem] rounded-full opacity-30 blur-3xl"
+            style={{
+              background: `radial-gradient(circle, #88F3AC 0%, #88F3AC 50%, transparent 100%)`
+            }}
+          />
+          <motion.div
+            animate={{
+              y: [0, 20, 0],
+              scale: [1, 1.12, 1],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+            className="absolute -right-24 bottom-1/4 w-[24rem] h-[24rem] rounded-full opacity-25 blur-3xl"
+            style={{
+              background: `radial-gradient(circle, #ECFE74 0%, #ECFE74 50%, transparent 100%)`
+            }}
+          />
+        </div>
+        
+      <Card className="space-y-6 bg-white/30 flex flex-col relative z-10" hoverEffect={false}>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-3">
             <motion.div
@@ -265,57 +412,49 @@ export function ConversationFlow() {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-3">
-          <AnimatePresence initial={false}>
+        <div className="flex flex-col gap-3 h-[400px] overflow-y-auto scrollbar-hide">
+          <AnimatePresence initial={false} mode="popLayout">
             {messages.map((message, index) => (
               <motion.div
                 key={message.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                layout
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-md transition-shadow hover:shadow-lg",
+                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-md will-change-auto",
                   message.role === "guide"
                     ? "self-start bg-white/75 text-[#174D3A] border border-white/30"
                     : "self-end bg-[#174D3A]/90 text-[#F4EDE1]"
                 )}
               >
-                <div className="flex items-start gap-2">
-                  {message.role === "guide" && <Sparkles className="h-4 w-4 flex-shrink-0 mt-0.5" />}
-                  {message.role === "user" && <User className="h-4 w-4 flex-shrink-0 mt-0.5" />}
-                  <span>{message.content}</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    {message.role === "guide" && <Sparkles className="h-4 w-4 flex-shrink-0 mt-0.5" />}
+                    {message.role === "user" && <User className="h-4 w-4 flex-shrink-0 mt-0.5" />}
+                    <span className="whitespace-pre-wrap">{message.content}</span>
+                  </div>
+                  {message.citations && message.citations.length > 0 && (
+                    <div className="ml-6 mt-2 flex flex-wrap gap-2">
+                      {message.citations.map((citation, idx) => (
+                        <div key={idx} className="inline-flex items-center gap-1.5 rounded-full bg-[#174D3A] px-2.5 py-1 text-[0.65rem] font-medium text-white border border-[#174D3A]">
+                          <Globe className="h-3 w-3" />
+                          <span>{citation}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
+            {isTyping && <TypingIndicator />}
           </AnimatePresence>
           <div ref={messagesEndRef} />
         </div>
 
-        {!mode && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-3 sm:flex-row"
-          >
-            <Button
-              variant="secondary"
-              className="w-full justify-center border-white/30 bg-white/40 text-[#174D3A] hover:bg-white/60"
-              onClick={() => handleModeSelect("issue")}
-            >
-              I&apos;m working through something
-            </Button>
-            <Button
-              variant="secondary"
-              className="w-full justify-center border-white/30 bg-white/40 text-[#174D3A] hover:bg-white/60"
-              onClick={() => handleModeSelect("goal")}
-            >
-              I&apos;m building toward a goal
-            </Button>
-          </motion.div>
-        )}
 
-        {mode && !isComplete && currentStep && (
+        {false && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -363,17 +502,14 @@ export function ConversationFlow() {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-white/20 pt-5"
           >
-            <p className="text-sm text-[#222222]/70 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#174D3A]" />
-              We&apos;ll use this to craft foods, herbs, habits and safety notes you can trust.
+            <p className="text-xs text-[#222222]/60 flex items-center gap-2">
+              <Sparkles className="h-3 w-3 text-[#174D3A]" />
+              This is a preview of how Rootwise conversations feel—warm, supportive and safety-first.
             </p>
-            <Button variant="secondary" className="sm:w-auto group" onClick={handleReset}>
-              <RotateCcw className="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
-              Start another entry
-            </Button>
           </motion.div>
         )}
       </Card>
+      </div>
 
       <div className="space-y-4">
         <motion.div
@@ -486,4 +622,69 @@ function humanizeKey(key: string) {
     .replace(/([A-Z])/g, " $1")
     .replace(/_/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function TypewriterText({ text, isTyping }: { text: string; isTyping?: boolean }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isTyping) {
+      setDisplayedText(text);
+      return;
+    }
+
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText(text.slice(0, currentIndex + 1));
+        setCurrentIndex(currentIndex + 1);
+      }, 30); // 30ms per character for smooth typing
+
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, text, isTyping]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setDisplayedText("");
+  }, [text]);
+
+  // Render text with proper whitespace handling
+  return (
+    <span className="whitespace-pre-wrap">
+      {displayedText || text}
+    </span>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="max-w-[85%] self-start rounded-2xl px-4 py-3 bg-white/75 text-[#174D3A] border border-white/30 shadow-md"
+    >
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 flex-shrink-0" />
+        <div className="flex gap-1">
+          <motion.span
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+            className="w-2 h-2 rounded-full bg-[#174D3A]"
+          />
+          <motion.span
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+            className="w-2 h-2 rounded-full bg-[#174D3A]"
+          />
+          <motion.span
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+            className="w-2 h-2 rounded-full bg-[#174D3A]"
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
 }
