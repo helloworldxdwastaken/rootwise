@@ -43,10 +43,10 @@ export function Navbar() {
             : "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
         }}
         className={cn(
-          "flex w-full max-w-6xl items-center gap-6 rounded-full border border-white/40 px-6 py-3 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300 shadow-lg",
+          "flex w-full max-w-6xl items-center gap-6 rounded-full border border-white/40 px-6 py-3 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 shadow-lg",
           scrolled 
-            ? "bg-white/80 shadow-xl" 
-            : "bg-white/60"
+            ? "bg-white/85 shadow-xl" 
+            : "bg-white/70"
         )}
       >
         <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-[#174D3A] group">
@@ -151,7 +151,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute left-4 right-4 top-[calc(100%+0.75rem)] rounded-3xl border border-white/40 bg-white/80 backdrop-blur-2xl backdrop-saturate-150 p-5 text-sm text-[#174D3A] shadow-2xl md:hidden"
+            className="absolute left-4 right-4 top-[calc(100%+0.75rem)] rounded-3xl border border-white/40 bg-white/85 backdrop-blur-md backdrop-saturate-150 p-5 text-sm text-[#174D3A] shadow-2xl md:hidden"
           >
             <nav className="flex flex-col gap-2">
               {navLinks.map((link, index) => (
