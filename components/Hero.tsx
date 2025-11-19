@@ -163,18 +163,33 @@ export function Hero() {
         transition={{ duration: 0.8, delay: 0.3 }}
         className="w-full md:w-1/2 flex items-center justify-center md:justify-end flex-shrink-0 relative"
       >
-        <div className="relative w-full z-10">
-          {/* White background card behind video */}
-          <div className="absolute inset-0 bg-white rounded-2xl shadow-xl -z-10" />
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-auto rounded-2xl relative z-10"
-          >
-            <source src="/Homepage /nutrianimation.webm" type="video/webm" />
-          </video>
+        <div className="relative w-full">
+          {/* White shadow behind SVG */}
+          <div className="absolute inset-0 blur-3xl opacity-40 bg-white rounded-[36px] translate-y-8" />
+          
+          {/* SVG Screen with drop shadow */}
+          <div className="relative" style={{ filter: 'drop-shadow(0px 50px 100px rgba(54, 54, 54, 0.6))' }}>
+            <Image
+              src="/Homepage /screen.svg"
+              alt="Screen mockup"
+              width={2066}
+              height={1344}
+              className="w-full h-auto relative z-10"
+              priority
+            />
+          </div>
+          {/* Video overlaid on top of screen */}
+          <div className="absolute inset-0 flex items-center justify-center pl-[25%] pr-[0%] pt-[10%] pb-[0%]">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-auto rounded-lg"
+            >
+              <source src="/Homepage /nutrianimation.webm" type="video/webm" />
+            </video>
+          </div>
         </div>
       </motion.div>
       </div>
