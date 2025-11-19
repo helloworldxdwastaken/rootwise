@@ -8,24 +8,31 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  email         String       @unique
-  password      String
-  name          String?
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  name              String?
+  emailVerified     DateTime?
+  image             String?
+  preferredLanguage String?
+  timezone          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  profile       UserProfile?
-  sessions      Session[]
-  accounts      Account[]
+  profile        UserProfile?
+  patientProfile PatientProfile?
+  sessions       Session[]
+  accounts       Account[]
+  conditions     Condition[]
+  chatSessions   ChatSession[]
+  chatMessages   ChatMessage[]
+  userMemories   UserMemory[]
 }
 
 model UserProfile {
-  id            String @id @default(cuid())
-  user          User   @relation(fields: [userId], references: [id])
-  userId        String @unique
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
 
   hasDiabetes         Boolean @default(false)
   hasThyroidIssue     Boolean @default(false)
@@ -48,9 +55,9 @@ model UserProfile {
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 
   mode           SessionMode
   primaryFocus   String
@@ -85,4 +92,111 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model PatientProfile {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  dateOfBirth    DateTime?
+  sex            Sex       @default(UNKNOWN)
+  heightCm       Float?
+  weightKg       Float?
+  lifestyleNotes String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Condition {
+  id          String            @id @default(cuid())
+  userId      String
+  name        String
+  category    ConditionCategory @default(SYMPTOM)
+  notes       String?
+  diagnosedAt DateTime?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+model ChatSession {
+  id        String    @id @default(cuid())
+  userId    String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  source    String?
+  metadata  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@index([userId, startedAt])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  userId    String?
+  role      MessageRole
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model UserMemory {
+  id         String           @id @default(cuid())
+  userId     String
+  key        String
+  value      Json
+  importance MemoryImportance @default(MEDIUM)
+  lastUsedAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
+  @@index([userId, importance])
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum ConditionCategory {
+  CHRONIC
+  ACUTE
+  SYMPTOM
+  DIAGNOSIS
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MemoryImportance {
+  LOW
+  MEDIUM
+  HIGH
 }

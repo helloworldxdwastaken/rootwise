@@ -79,7 +79,7 @@ export default function CareersPage() {
               No open positions at this time
             </h2>
             <p className="text-base leading-7 text-[#222222]/80 mb-8">
-              We're not actively hiring right now, but we're always excited to meet passionate people who share our mission. Send us your story and we'll keep you in mind for future opportunities.
+              We&apos;re not actively hiring right now, but we&apos;re always excited to meet passionate people who share our mission. Send us your story and we&apos;ll keep you in mind for future opportunities.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 

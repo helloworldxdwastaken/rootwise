@@ -67,8 +67,9 @@ export default function RegisterPage() {
         router.push("/profile");
         router.refresh();
       }
-    } catch (error: any) {
-      setError(error.message || "Something went wrong. Please try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
