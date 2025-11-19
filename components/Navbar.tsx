@@ -4,22 +4,31 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Leaf, LogOut, User } from "lucide-react";
+import { Menu, X, Leaf, LogOut, User, ChevronDown } from "lucide-react";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Safety", href: "#safety" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Safety", href: "/#safety" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/#faq" },
+];
+
+const profileMenuLinks = [
+  { label: "Overview", href: "/personal/overview" },
+  { label: "Health Profile", href: "/profile?tab=health" },
+  { label: "Conditions", href: "/profile?tab=conditions" },
+  { label: "Memories", href: "/profile?tab=memories" },
+  { label: "Chat History", href: "/profile?tab=chat" },
 ];
 
 export function Navbar() {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,20 +88,55 @@ export function Navbar() {
         <div className="hidden items-center gap-3 md:flex md:flex-shrink-0">
           {status === "authenticated" ? (
             <>
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/30 px-4 py-2 text-sm font-semibold text-[#174D3A] shadow-sm transition-all hover:bg-white/50 hover:scale-105 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#174D3A]"
+              <div
+                className="relative"
+                onMouseEnter={() => setProfileMenuOpen(true)}
+                onMouseLeave={() => setProfileMenuOpen(false)}
+                onFocus={() => setProfileMenuOpen(true)}
+                onBlur={() => setProfileMenuOpen(false)}
               >
-                <User className="h-4 w-4" />
-                {session?.user?.name || "My profile"}
-              </Link>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/30 px-4 py-2 text-sm font-semibold text-[#174D3A] shadow-sm transition-all hover:bg-white/50 hover:scale-105 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#174D3A]"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </button>
+                <button
+                  className="flex items-center gap-2 rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-black/80 hover:scale-105 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#174D3A]"
+                >
+                  <User className="h-4 w-4" />
+                  {session?.user?.name || "My profile"}
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <AnimatePresence>
+                  {profileMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/30 bg-white/90 p-3 text-sm text-[#174D3A] shadow-xl backdrop-blur"
+                    >
+                      {profileMenuLinks.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          className="flex items-center gap-2 rounded-xl px-3 py-2 font-medium transition hover:bg-white"
+                          onClick={() => setProfileMenuOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                      <div className="mt-2 border-t border-white/40 pt-2">
+                        <button
+                          onClick={() => {
+                            setProfileMenuOpen(false);
+                            signOut({ callbackUrl: "/" });
+                          }}
+                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#C0392B] transition hover:bg-[#C0392B]/10"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Sign out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </>
           ) : (
             <>
@@ -178,20 +222,25 @@ export function Navbar() {
               >
                 {status === "authenticated" ? (
                   <>
-                    <Link
-                      href="/profile"
-                      className="flex items-center gap-2 rounded-2xl px-4 py-3 font-semibold transition-colors hover:bg-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#174D3A]"
-                      onClick={() => setOpen(false)}
-                    >
-                      <User className="h-4 w-4" />
-                      {session?.user?.name || "My profile"}
-                    </Link>
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#174D3A]/70 px-4">
+                      My Space
+                    </p>
+                    {profileMenuLinks.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 font-semibold transition-colors hover:bg-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#174D3A]"
+                        onClick={() => setOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
                     <button
                       onClick={() => {
                         setOpen(false);
                         signOut({ callbackUrl: "/" });
                       }}
-                      className="w-full flex items-center gap-2 rounded-2xl px-4 py-3 font-medium transition-colors hover:bg-white/40 text-left"
+                      className="w-full flex items-center gap-2 rounded-2xl px-4 py-3 font-medium transition-colors hover:bg-white/40 text-left text-[#C0392B]"
                     >
                       <LogOut className="h-4 w-4" />
                       Sign out

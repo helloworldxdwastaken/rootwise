@@ -82,9 +82,9 @@ export async function generateAIResponse(
       parts: [{ text: m.content }],
     }));
 
-    // Initialize model (use Gemini 1.5 Pro - current stable version)
+    // Initialize model (use Gemini 1.5 Pro)
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro-latest",
+      model: "gemini-1.5-pro",
     });
 
     // Generate response with full context
