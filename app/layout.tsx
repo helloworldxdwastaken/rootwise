@@ -37,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden scroll-smooth">
       <body className={`${poppins.variable} font-sans antialiased overflow-x-hidden`}>
         <SessionProvider>{children}</SessionProvider>
       </body>

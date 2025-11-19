@@ -87,9 +87,9 @@ export function Hero() {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-30 mx-auto flex w-full max-w-7xl flex-col md:flex-row gap-12 lg:gap-20 px-6 sm:px-8 items-center pt-40 sm:pt-48 md:pt-56 pb-48 sm:pb-56 md:pb-64"
+      <div className="relative z-30 mx-auto flex w-full max-w-7xl flex-col-reverse md:flex-row gap-8 md:gap-12 lg:gap-20 px-4 sm:px-6 md:px-8 items-center pt-32 sm:pt-40 md:pt-56 pb-32 sm:pb-40 md:pb-64"
       >
-        <div className="w-full md:w-1/2 space-y-6 text-center md:text-left flex-shrink-0">
+        <div className="w-full md:w-1/2 space-y-5 md:space-y-6 text-center md:text-left flex-shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

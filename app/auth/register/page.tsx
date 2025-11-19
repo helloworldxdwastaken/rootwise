@@ -7,6 +7,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Leaf, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PageShell } from "@/components/PageShell";
+import { Footer } from "@/components/Footer";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -73,7 +75,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--color-background)] py-12">
+    <PageShell>
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
       {/* Animated background gradients */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <motion.div
@@ -237,6 +240,8 @@ export default function RegisterPage() {
         </p>
       </motion.div>
     </div>
+    <Footer />
+    </PageShell>
   );
 }
 

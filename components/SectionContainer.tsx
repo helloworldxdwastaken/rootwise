@@ -21,7 +21,7 @@ export function SectionContainer({
     <Component
       id={id}
       className={cn(
-        "relative mx-auto flex w-full flex-col gap-6 px-6 py-16 sm:px-8 sm:py-20 self-stretch",
+        "relative mx-auto flex w-full flex-col gap-6 px-4 py-12 sm:px-6 sm:py-16 md:px-8 md:py-20 self-stretch",
         maxWidthClass,
         className
       )}

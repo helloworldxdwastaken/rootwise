@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/Navbar";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ScrollToTopOnMount } from "@/components/ScrollToTopOnMount";
 
 type PageShellProps = {
   children: ReactNode;
@@ -64,6 +65,7 @@ export function PageShell({ children, className, contentClassName }: PageShellPr
         </div>
       </div>
       <ScrollToTop />
+      <ScrollToTopOnMount />
     </div>
   );
 }

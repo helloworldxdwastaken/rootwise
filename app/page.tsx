@@ -337,7 +337,7 @@ function SafetySection() {
   return (
     <AnimatedSection delay={0.1}>
       <SectionContainer id="safety" aria-labelledby="safety-heading" className="gap-8" maxWidthClass="max-w-6xl">
-        <div className="relative rounded-[40px] border border-white/50 bg-white p-10 shadow-[0_30px_80px_rgba(20,16,12,0.15)] overflow-hidden">
+        <div className="relative rounded-[32px] md:rounded-[40px] border border-white/50 bg-white p-6 sm:p-8 md:p-10 shadow-[0_30px_80px_rgba(20,16,12,0.15)] overflow-hidden">
           {/* Gradient balls inside container */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {/* Left ball - Green */}

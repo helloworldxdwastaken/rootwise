@@ -40,7 +40,7 @@ export function Footer() {
         className="gap-12"
         maxWidthClass="max-w-7xl"
       >
-        <div className="relative w-full rounded-[32px] overflow-hidden px-6 py-12 sm:px-10 sm:py-16 shadow-2xl">
+        <div className="relative w-full rounded-[32px] overflow-hidden px-4 py-10 sm:px-8 sm:py-14 md:px-10 md:py-16 shadow-2xl">
           {/* Background Image - Same as Hero */}
           <div className="absolute inset-0 w-full h-full">
             <Image
@@ -57,14 +57,14 @@ export function Footer() {
           {/* Content */}
           <div className="relative z-10"
           >
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="space-y-4 lg:col-span-2"
+            className="space-y-4 lg:col-span-2 order-1"
           >
             <Link href="#home" className="flex items-center gap-2 text-lg font-semibold text-white group">
               <motion.span
@@ -97,13 +97,40 @@ export function Footer() {
             </div>
           </motion.div>
 
+          {/* App Downloads - Show second on mobile */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="space-y-4 order-2 md:order-4"
+          >
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Get the app</h3>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="#"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 shadow transition hover:-translate-y-0.5 hover:bg-black/90"
+                aria-label="Download on the App Store"
+              >
+                <AppStoreBadge />
+              </Link>
+              <Link
+                href="#"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 shadow transition hover:-translate-y-0.5 hover:bg-black/90"
+                aria-label="Get it on Google Play"
+              >
+                <GooglePlayBadge />
+              </Link>
+            </div>
+          </motion.div>
+
           {/* Product Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="space-y-4"
+            className="space-y-4 order-3"
           >
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Product</h3>
             <ul className="space-y-3">
@@ -126,7 +153,7 @@ export function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-4"
+            className="space-y-4 order-4 md:order-3"
           >
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Legal & Trust</h3>
             <ul className="space-y-3">
@@ -142,33 +169,6 @@ export function Footer() {
               ))}
             </ul>
           </motion.div>
-
-          {/* App Downloads */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="space-y-4"
-          >
-            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Get the app</h3>
-            <div className="flex flex-col gap-3">
-              <Link
-                href="#"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 shadow transition hover:-translate-y-0.5 hover:bg-black/90"
-                aria-label="Download on the App Store"
-              >
-                <AppStoreBadge />
-              </Link>
-              <Link
-                href="#"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 shadow transition hover:-translate-y-0.5 hover:bg-black/90"
-                aria-label="Get it on Google Play"
-              >
-                <GooglePlayBadge />
-              </Link>
-            </div>
-          </motion.div>
         </div>
 
         {/* Trust Badge */}
@@ -177,7 +177,7 @@ export function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="grid gap-4 sm:grid-cols-3 rounded-2xl border border-white/30 bg-white/10 backdrop-blur-xl p-6 mb-4"
+          className="grid gap-4 sm:grid-cols-3 rounded-2xl border border-white/30 bg-white/10 backdrop-blur-xl p-6 mb-4 mt-8 md:mt-12"
         >
           <div className="flex items-start gap-3">
             <Shield className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
