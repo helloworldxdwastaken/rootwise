@@ -28,8 +28,45 @@ export function Hero() {
       aria-labelledby="hero-heading"
       className="relative w-screen overflow-hidden -mt-28 sm:-mt-32 md:-mt-36 left-1/2 right-1/2 -mx-[50vw]"
     >
+      {/* Decorative Gradient Balls */}
+      <div className="absolute inset-0 w-full h-full overflow-visible pointer-events-none z-5">
+        {/* Green ball - Top Middle (half outside top) */}
+        <motion.div
+          animate={{
+            y: [0, -30, 0],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[45rem] h-[45rem] rounded-full opacity-75 blur-3xl"
+          style={{
+            background: `radial-gradient(circle, #88F3AC 0%, #88F3AC 50%, transparent 100%)`
+          }}
+        />
+        {/* Yellowish-Green ball - Middle Right (half outside) */}
+        <motion.div
+          animate={{
+            y: [0, 25, 0],
+            scale: [1, 1.12, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+          className="absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/2 w-[45rem] h-[45rem] rounded-full opacity-70 blur-3xl"
+          style={{
+            background: `radial-gradient(circle, #ECFE74 0%, #ECFE74 50%, transparent 100%)`
+          }}
+        />
+      </div>
+
       {/* Background Image - Full Width */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full z-0">
         <Image
           src="/Homepage /HEROBG.png"
           alt="Hero background"
@@ -50,40 +87,32 @@ export function Hero() {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col md:flex-row gap-8 lg:gap-16 px-6 sm:px-8 items-center pt-40 sm:pt-48 md:pt-56 pb-48 sm:pb-56 md:pb-64"
+      <div className="relative z-30 mx-auto flex w-full max-w-7xl flex-col md:flex-row gap-12 lg:gap-20 px-6 sm:px-8 items-center pt-40 sm:pt-48 md:pt-56 pb-48 sm:pb-56 md:pb-64"
       >
-        <div className="w-full md:w-5/12 space-y-8 text-center md:text-left flex-shrink-0">
+        <div className="w-full md:w-1/2 space-y-6 text-center md:text-left flex-shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="space-y-4"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#174D3A] backdrop-blur-md shadow-lg"
-          >
-            <Sparkles className="h-3 w-3" />
-            Listening matters
-          </motion.div>
-          
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
             id="hero-heading"
-            className="gradient-text text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl"
+            className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight text-[#0a0a0a] tracking-tight"
           >
-            Listen to your body. We help you respond gently.
+            Listen to your body.
+            <br />
+            We help you respond gently.
           </motion.h1>
           
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-base leading-7 text-[#222222]/80 sm:text-lg sm:leading-8 max-w-2xl mx-auto md:mx-0"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-lg sm:text-xl leading-relaxed text-[#0a0a0a] max-w-xl mx-auto md:mx-0"
           >
             Describe how you feel and Rootwise suggests foods, herbs and daily habits that may support your body – always with safety notes and zero pharma.
           </motion.p>
@@ -92,44 +121,38 @@ export function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-col sm:flex-row items-center gap-4 md:items-center md:justify-start"
+        >
+          <Button href="/auth/register" className="w-full sm:w-auto px-8 py-3.5 text-base">
+            Get started free
+          </Button>
+          <Button href="#how-it-works" variant="secondary" className="w-full sm:w-auto px-8 py-3.5 text-base">
+            Learn more
+          </Button>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-4 md:justify-start"
+          className="flex flex-wrap items-center justify-center md:justify-start gap-6 pt-4"
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <motion.div
                 key={feature.text}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-                className="flex items-center gap-2 rounded-full border border-[#174D3A]/20 bg-white/40 px-4 py-2 text-sm font-medium text-[#174D3A] backdrop-blur-sm"
+                className="flex items-center gap-2 text-sm text-[#222222]/60"
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 text-[#174D3A]" />
                 {feature.text}
               </motion.div>
             );
           })}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-start"
-        >
-          <Button href="#conversation" className="w-full md:w-auto group relative overflow-hidden">
-            <span className="relative z-10">Try Rootwise free</span>
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-[#A6C7A3] to-[#174D3A]"
-              initial={{ x: "-100%" }}
-              whileHover={{ x: 0 }}
-              transition={{ duration: 0.3 }}
-            />
-          </Button>
-          <Button href="#how-it-works" variant="secondary" className="w-full md:w-auto">
-            See how it works
-          </Button>
         </motion.div>
       </div>
 
@@ -137,18 +160,22 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="w-full md:w-7/12 flex items-center justify-center md:justify-end flex-shrink-0"
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="w-full md:w-1/2 flex items-center justify-center md:justify-end flex-shrink-0 relative"
       >
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-auto"
-        >
-          <source src="/Homepage /nutrianimation.webm" type="video/webm" />
-        </video>
+        <div className="relative w-full z-10">
+          {/* White background card behind video */}
+          <div className="absolute inset-0 bg-white rounded-2xl shadow-xl -z-10" />
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto rounded-2xl relative z-10"
+          >
+            <source src="/Homepage /nutrianimation.webm" type="video/webm" />
+          </video>
+        </div>
       </motion.div>
       </div>
     </section>
