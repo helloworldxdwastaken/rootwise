@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  password      String
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  profile       UserProfile?
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model UserProfile {
+  id            String @id @default(cuid())
+  user          User   @relation(fields: [userId], references: [id])
+  userId        String @unique
+
+  hasDiabetes         Boolean @default(false)
+  hasThyroidIssue     Boolean @default(false)
+  hasHeartIssue       Boolean @default(false)
+  hasKidneyLiverIssue Boolean @default(false)
+  isPregnantOrNursing Boolean @default(false)
+  onBloodThinners     Boolean @default(false)
+
+  vegetarian  Boolean @default(false)
+  vegan       Boolean @default(false)
+  lactoseFree Boolean @default(false)
+  glutenFree  Boolean @default(false)
+  nutAllergy  Boolean @default(false)
+
+  preferredLanguages String?
+  otherNotes         String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  mode           SessionMode
+  primaryFocus   String
+  nuance         String?
+  timeframe      String?
+  notes          String?
+  structuredData Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SessionMode {
+  ISSUE
+  GOAL
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}

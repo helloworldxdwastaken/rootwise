@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "project": "Rootwise Legal & Marketing Pages",
+    "version": "1.0",
+    "date": "2024-11-18",
+    "description": "Complete set of legal compliance and marketing trust pages for Rootwise wellness platform"
+  },
+  
+  "footer_disclaimer": "Rootwise provides general wellness and nutrition information only. It does not offer medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional about your health. In an emergency, contact your local emergency services.",
+  
+  "pages": {
+    "disclaimer": {
+      "slug": "safety-disclaimer",
+      "seo": {
+        "title": "Safety & Medical Disclaimer | Rootwise Wellness Information Only",
+        "description": "Rootwise provides general wellness and nutrition information only. Not medical advice, diagnosis, or treatment. Always consult healthcare professionals.",
+        "keywords": ["wellness disclaimer", "not medical advice", "health information only", "safety notice", "consult healthcare professional"]
+      },
+      "summary": "Comprehensive medical disclaimer explaining that Rootwise is educational only, not medical advice, with emergency protocols, allergy warnings, and liability limitations."
+    },
+    
+    "terms": {
+      "slug": "terms-of-use",
+      "seo": {
+        "title": "Terms of Use | Rootwise Wellness Platform",
+        "description": "Terms and conditions for using Rootwise. Educational wellness information, user responsibilities, and service guidelines.",
+        "keywords": ["terms of use", "service terms", "user agreement", "wellness platform terms", "acceptable use"]
+      },
+      "summary": "Legal terms covering service description, user eligibility, prohibited uses, intellectual property, limitation of liability, and dispute resolution."
+    },
+    
+    "privacy": {
+      "slug": "privacy-policy",
+      "seo": {
+        "title": "Privacy Policy | How Rootwise Protects Your Data",
+        "description": "Learn how Rootwise collects, uses, and protects your wellness information. GDPR-compliant, transparent, privacy-first practices.",
+        "keywords": ["privacy policy", "data protection", "GDPR", "user privacy", "data security", "wellness data"]
+      },
+      "summary": "GDPR-compliant privacy policy covering data collection, AI processing, user rights (access, delete, portability), cookie usage, and international data transfers."
+    },
+    
+    "cookies": {
+      "slug": "cookie-notice",
+      "seo": {
+        "title": "Cookie Notice | Rootwise Cookie Policy",
+        "description": "How Rootwise uses cookies for functionality, analytics, and preferences. Manage your cookie settings.",
+        "keywords": ["cookie policy", "cookie notice", "tracking", "privacy", "cookie settings"]
+      },
+      "summary": "Simple cookie notice explaining essential, functional, and analytics cookies, with opt-out instructions and DNT support."
+    },
+    
+    "how_it_works": {
+      "slug": "how-it-works",
+      "seo": {
+        "title": "How Rootwise Works | Gentle AI-Assisted Wellness Guidance",
+        "description": "Discover how Rootwise uses conversational AI to create personalized wellness plans with foods, herbs, habits—always safety-first and educational only.",
+        "keywords": ["how rootwise works", "AI wellness guide", "personalized nutrition", "natural wellness", "safe health guidance"]
+      },
+      "summary": "Marketing page explaining the 4-step Rootwise process, example wellness plans (headache, bloating, sleep), evidence-informed suggestions, and safety-first approach."
+    },
+    
+    "trust": {
+      "slug": "why-trust-us",
+      "seo": {
+        "title": "Why Trust Rootwise | Transparent, Safety-First Wellness Guidance",
+        "description": "Learn why Rootwise is different: evidence-informed, AI-assisted, human-centered wellness without hype, miracle claims, or medical overreach.",
+        "keywords": ["trust rootwise", "safe wellness advice", "transparent health information", "AI wellness ethics", "evidence-based nutrition"]
+      },
+      "summary": "Trust-building page covering transparency, AI + human collaboration, evidence-informed (not evidence-free) approach, compassionate tone, and cultural inclusivity."
+    },
+    
+    "approach": {
+      "slug": "our-approach",
+      "seo": {
+        "title": "Our Approach to Wellness | Rootwise Philosophy & Values",
+        "description": "Discover Rootwise's philosophy: gentle, patient-centered, slow wellness with foods, herbs, and habits as support—not cure.",
+        "keywords": ["wellness philosophy", "holistic health approach", "patient-centered wellness", "safe natural health", "rootwise values"]
+      },
+      "summary": "Philosophy page explaining Rootwise values: gentle over extreme, safety over hype, compassion over judgment, curiosity over dogma, and empowerment over replacement."
+    }
+  },
+  
+  "cta_buttons": {
+    "primary": {
+      "text": "Try Rootwise Free",
+      "description": "Main call-to-action for early access signup"
+    },
+    "secondary": {
+      "text": "See How It Works",
+      "description": "Educational link to How Rootwise Works page"
+    },
+    "safety": {
+      "text": "Read Safety Notes",
+      "description": "Link to full medical disclaimer"
+    }
+  },
+  
+  "trust_signals": {
+    "badges": [
+      "Privacy-First: We Never Sell Your Data",
+      "Safety-First: Red-Flag Warnings in Every Plan",
+      "No Hidden Agendas: No Product Sales or Upsells",
+      "Culturally Inclusive: Respects Diverse Traditions",
+      "Evidence-Informed: Rooted in Nutrition Science & Herbal Traditions",
+      "Transparent AI: We Tell You How It Works"
+    ],
+    "disclaimers": [
+      "Educational information only",
+      "Not medical advice, diagnosis, or treatment",
+      "Always consult healthcare professionals",
+      "AI-assisted but not infallible",
+      "Your use is at your own discretion"
+    ]
+  },
+  
+  "languages_planned": ["en", "es", "he", "ru"],
+  
+  "contact_emails": {
+    "general": "support@rootwise.example",
+    "legal": "legal@rootwise.example",
+    "privacy": "privacy@rootwise.example",
+    "safety": "safety@rootwise.example",
+    "dpo": "dpo@rootwise.example"
+  },
+  
+  "brand_voice": {
+    "tone": "Warm, calm, compassionate, transparent, safety-conscious, empowering",
+    "avoid": "Hype, miracle claims, medical overreach, shame, rigid rules, sensationalism",
+    "embrace": "Gentleness, patience, curiosity, autonomy, partnership with professionals"
+  }
+}
