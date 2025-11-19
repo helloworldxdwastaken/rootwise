@@ -129,6 +129,7 @@ export function ConversationFlow() {
 
   function playDemoConversation() {
     let currentDelay = 500; // Start delay
+    let messageCounter = 0;
     
     demoConversation.forEach((msg, index) => {
       currentDelay += msg.delay;
@@ -138,18 +139,20 @@ export function ConversationFlow() {
           setIsTyping(true);
           setTimeout(() => {
             setIsTyping(false);
+            messageCounter++;
             // Add message fully formed (no typing animation to prevent layout shift)
             setMessages((prev) => [...prev, {
-              id: `demo-${index}-${Date.now()}`,
+              id: `demo-guide-${index}-${messageCounter}`,
               role: "guide",
               content: msg.content,
               citations: msg.citations,
             }]);
           }, 800);
         } else {
+          messageCounter++;
           // User messages appear instantly
           setMessages((prev) => [...prev, {
-            id: `demo-user-${index}-${Date.now()}`,
+            id: `demo-user-${index}-${messageCounter}`,
             role: "user",
             content: msg.content,
           }]);
