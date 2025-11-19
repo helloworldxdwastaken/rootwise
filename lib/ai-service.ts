@@ -82,30 +82,24 @@ export async function generateAIResponse(
       parts: [{ text: m.content }],
     }));
 
-    // Initialize model
+    // Initialize model (use Gemini 1.5 Pro - current stable version)
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-pro",
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.9,
-        maxOutputTokens: 1024,
-      },
+      model: "gemini-1.5-pro-latest",
     });
 
-    // Create chat with history
-    const chat = model.startChat({
-      history,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-      },
-    });
-
-    // Generate response
-    const fullPrompt = `${SYSTEM_PROMPT}\n${contextPrompt}\n\nUser message: ${userMessage}`;
-    const result = await chat.sendMessage(fullPrompt);
-    const response = result.response;
+    // Generate response with full context
+    const fullPrompt = `${SYSTEM_PROMPT}\n${contextPrompt}\n\nConversation history:\n${history.map(h => `${h.role}: ${h.parts[0].text}`).join('\n')}\n\nUser: ${userMessage}\n\nRootwise:`;
     
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024,
+        topP: 0.9,
+      },
+    });
+    
+    const response = result.response;
     return response.text();
   } catch (error) {
     console.error("AI generation error:", error);
