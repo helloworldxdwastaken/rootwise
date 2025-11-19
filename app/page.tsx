@@ -1,3 +1,5 @@
+"use client";
+
 import { Hero } from "@/components/Hero";
 import { SectionContainer } from "@/components/SectionContainer";
 import { Card } from "@/components/Card";
@@ -7,6 +9,7 @@ import { ConversationFlow } from "@/components/ConversationFlow";
 import { PageShell } from "@/components/PageShell";
 import { Footer } from "@/components/Footer";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { motion } from "framer-motion";
 
 const howSteps = [
   {
@@ -166,7 +169,7 @@ function SectionHeading({
 }: {
   id?: string;
   eyebrow?: string;
-  title: string;
+  title: string | React.ReactNode;
   description?: string;
 }) {
   return (
@@ -176,7 +179,7 @@ function SectionHeading({
           {eyebrow}
         </span>
       )}
-      <h2 id={id} className="gradient-text text-3xl font-semibold sm:text-4xl">
+      <h2 id={id} className="text-3xl font-semibold sm:text-4xl text-[#0a0a0a]">
         {title}
       </h2>
       {description && <p className="text-base leading-7 text-[#222222]/80">{description}</p>}
@@ -334,29 +337,66 @@ function SafetySection() {
   return (
     <AnimatedSection delay={0.1}>
       <SectionContainer id="safety" aria-labelledby="safety-heading" className="gap-8" maxWidthClass="max-w-6xl">
-        <div className="rounded-[40px] border border-white/50 bg-gradient-to-br from-[#F6D365] via-[#9FE080] to-[#8BC6FF] p-10 text-[#0f2b23] shadow-[0_30px_80px_rgba(20,16,12,0.35)] backdrop-blur-xl">
-          <div className="mx-auto flex max-w-3xl flex-col gap-4 text-center">
-            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/20 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#0f2b23]/80">
+        <div className="relative rounded-[40px] border border-white/50 bg-white p-10 shadow-[0_30px_80px_rgba(20,16,12,0.15)] overflow-hidden">
+          {/* Gradient balls inside container */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Left ball - Green */}
+            <motion.div
+              animate={{
+                y: [0, -20, 0],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute -left-32 top-1/2 -translate-y-1/2 w-[28rem] h-[28rem] rounded-full opacity-40 blur-3xl"
+              style={{
+                background: `radial-gradient(circle, #88F3AC 0%, #88F3AC 50%, transparent 100%)`
+              }}
+            />
+            {/* Right ball - Yellow-green */}
+            <motion.div
+              animate={{
+                y: [0, 20, 0],
+                scale: [1, 1.12, 1],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
+              className="absolute -right-32 top-1/3 w-[32rem] h-[32rem] rounded-full opacity-40 blur-3xl"
+              style={{
+                background: `radial-gradient(circle, #ECFE74 0%, #ECFE74 50%, transparent 100%)`
+              }}
+            />
+          </div>
+
+          <div className="relative z-10 mx-auto flex max-w-3xl flex-col gap-4 text-center">
+            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-[#174D3A]/20 bg-[#174D3A]/5 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#174D3A]">
               Safety first
             </span>
-            <h2 id="safety-heading" className="text-3xl font-semibold text-[#10362a] sm:text-4xl">
+            <h2 id="safety-heading" className="text-3xl font-semibold text-[#0a0a0a] sm:text-4xl">
               Safety first, always
             </h2>
-            <p className="text-base leading-7 text-[#0f2b23]/80">
+            <p className="text-base leading-7 text-[#0a0a0a]">
               Rootwise provides general wellness and nutrition information only. It does not offer medical advice, diagnosis or treatment.
             </p>
-            <p className="text-base leading-7 text-[#0f2b23]/80">
+            <p className="text-base leading-7 text-[#0a0a0a]">
               We encourage you to talk to healthcare professionals, not avoid them. Every plan includes a safety section with red-flag symptoms to watch for.
             </p>
           </div>
-          <div className="mt-6 rounded-2xl border border-[#174D3A]/20 bg-white/60 px-6 py-4 text-sm font-semibold text-[#0f2b23] shadow-lg backdrop-blur">
+          <div className="relative z-10 mt-6 rounded-2xl border border-[#F26C63]/30 bg-[#F26C63]/10 px-6 py-4 text-sm font-semibold text-[#0a0a0a] shadow-lg">
             In an emergency, contact your local emergency services immediately.
           </div>
-          <div className="mt-6 flex justify-center">
+          <div className="relative z-10 mt-6 flex justify-center">
             <Button
-              href="#faq"
-              variant="secondary"
-              className="border border-[#174D3A]/30 bg-[#174D3A]/15 text-[#10362a] transition hover:bg-[#174D3A]/25"
+              href="/legal/disclaimer"
+              variant="primary"
+              className="border border-black/10"
             >
               Read full safety notes
             </Button>
@@ -379,7 +419,7 @@ function PricingSection() {
           id="pricing-heading"
           eyebrow="Early access"
           title="Start free. Upgrade when it feels right."
-          description="During early access, you can try Rootwise for free. We’re working on gentle monthly pricing for unlimited personalized plans."
+          description="During early access, you can try Rootwise for free. We're working on gentle monthly pricing for unlimited personalized plans."
         />
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-[36px] border border-[#E9E0D7] bg-gradient-to-br from-[#FEFCFA] via-[#FBF7F2] to-[#F4EADC] p-10 shadow-[0_25px_65px_rgba(20,16,12,0.14)]">
@@ -410,12 +450,13 @@ function PricingSection() {
               </div>
             </div>
           </div>
-          <div className="rounded-[36px] border border-black/10 bg-[#050505] p-10 text-[#F8F5F0] shadow-[0_35px_90px_rgba(0,0,0,0.5)]">
+          <div className="relative rounded-[36px] p-[3px] bg-gradient-to-r from-[#F6D365] via-[#9FE080] to-[#8BC6FF] animate-gradient-rotate">
+            <div className="rounded-[33px] bg-[#050505] p-10 text-[#F8F5F0] h-full">
             <div className="flex h-full flex-col">
               <div>
                 <div className="flex items-center gap-3">
                   <span className="text-[38px] font-semibold tracking-tight text-white">Rootwise</span>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#050505]">
+                  <span className="rounded-full bg-gradient-to-r from-[#F6D365] via-[#9FE080] to-[#8BC6FF] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#050505]">
                     Plus
                   </span>
                 </div>
@@ -439,6 +480,7 @@ function PricingSection() {
                   Upgrade to Plus
                 </Button>
               </div>
+            </div>
             </div>
           </div>
         </div>

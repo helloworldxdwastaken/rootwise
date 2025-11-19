@@ -110,6 +110,27 @@ html {
   background-clip: text;
 }
 
+/* Animated gradient border for Rootwise Plus */
+@keyframes gradient-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-rotate {
+  background-size: 200% 200%;
+  animation: gradient-rotate 6s ease infinite;
+  box-shadow: 0 0 10px rgba(246, 211, 101, 1), 
+              0 0 20px rgba(159, 224, 128, 1),
+              0 0 30px rgba(139, 198, 255, 1);
+}
+
 /* Floating animation for cards */
 @keyframes float {
   0%, 100% {
