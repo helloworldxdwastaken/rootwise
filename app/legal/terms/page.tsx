@@ -33,7 +33,12 @@ const sections = [
   {
     title: "4. No Medical Guarantees",
     body:
-      "We make no promise that any suggestion will achieve specific results. The Service provides general information \"as is\" and may not apply to every user. Always confirm ideas with licensed healthcare providers.",
+      "We make no promise that any suggestion will achieve specific results. All suggestions are non-prescriptive and not guaranteed to achieve specific outcomes. The Service provides general information \"as is\" and may not apply to every user. Always confirm ideas with licensed healthcare providers.",
+  },
+  {
+    title: "4a. FDA Disclaimer",
+    body:
+      "This app is not intended to diagnose, treat, cure, or prevent any disease. It is not reviewed or approved by the FDA. Rootwise provides general wellness information for educational purposes only.",
   },
   {
     title: "5. User Responsibilities",

@@ -53,7 +53,7 @@ const examplePlans = [
   {
     label: "Example: Tension headache",
     summary:
-      "A calm, restoring focus to ease muscle tension, rehydrate and soothe nerves.",
+      "A calm, restoring focus that may support muscle comfort, hydration and nervous system balance.",
     foods: [
       "Water with a pinch of sea salt and lemon",
       "Herbal teas: chamomile, ginger, peppermint",

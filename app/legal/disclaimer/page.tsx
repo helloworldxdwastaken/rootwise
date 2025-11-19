@@ -25,12 +25,26 @@ export default function SafetyDisclaimerPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#C38F4A]">Safety first</p>
             <h2 className="gradient-text text-3xl font-semibold">Safety & Medical Disclaimer</h2>
             <p>Rootwise is an AI-assisted wellness companion created strictly for educational purposes. It is not a medical device, does not diagnose, and never replaces personal medical care.</p>
+            <div className="rounded-2xl border border-[#F26C63]/30 bg-[#F26C63]/10 p-4 mt-4">
+              <p className="font-semibold text-[#F26C63]">FDA Disclaimer</p>
+              <p className="mt-2 text-sm">This app is not intended to diagnose, treat, cure, or prevent any disease. It is not reviewed or approved by the FDA.</p>
+            </div>
           </header>
 
           <section className="space-y-3">
-            <h3 className="text-2xl font-semibold text-[#1A1A1A]">Educational Only</h3>
+            <h3 className="text-2xl font-semibold text-[#1A1A1A]">General Wellness Information Only</h3>
             <p>
-              Suggestions inside Rootwise—foods, teas, herbs, habits, reflections—are informational tips that may help you explore gentle support for everyday wellbeing. They are not medical advice, not prescriptions, and not personalized treatment plans. Information provided may not apply to everyone, and you should interpret each idea within your own health context.
+              Rootwise provides general wellness information for educational purposes only. Suggestions inside Rootwise—foods, teas, herbs, habits, reflections—are informational tips that may help you explore gentle support for everyday wellbeing. They are not medical advice, not prescriptions, and not personalized treatment plans. Information provided may not apply to everyone, and you should interpret each idea within your own health context.
+            </p>
+            <p className="font-semibold text-[#1A1A1A]">
+              Rootwise does not provide personalised medical treatment, does not replace clinical evaluation, and cannot assess symptoms or medical conditions. Rootwise does not assess symptoms, provide medical judgement, or offer individualized health treatment.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="text-2xl font-semibold text-[#1A1A1A]">No Guaranteed Outcomes</h3>
+            <p>
+              All suggestions are non-prescriptive and not guaranteed to achieve specific outcomes. Results may vary, and individual responses to foods, herbs, and lifestyle changes differ. We make no claims about effectiveness or specific health benefits.
             </p>
           </section>
 

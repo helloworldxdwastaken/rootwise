@@ -80,6 +80,11 @@ export default function PrivacyPage() {
           </section>
 
           <section className="space-y-2">
+            <h3 className="text-2xl font-semibold">Data Privacy (Israel)</h3>
+            <p>For users located in Israel, personal data is handled in accordance with the Israeli Protection of Privacy Law (5741-1981) and relevant guidance from the Israeli Privacy Protection Authority.</p>
+          </section>
+
+          <section className="space-y-2">
             <h3 className="text-2xl font-semibold">External Links</h3>
             <p>Rootwise may link to other sites. We are not responsible for their privacy practices. When leaving Rootwise, review the privacy policy of the destination site.</p>
           </section>
