@@ -102,10 +102,11 @@ export async function generateAIResponse(
     }
 
     // Build conversation history
-    const history = recentMessages.reverse().map((m) => ({
-      role: m.role === "USER" ? "user" : "assistant",
-      content: m.content,
-    }));
+    const history: Array<{ role: "user" | "assistant"; content: string }> =
+      recentMessages.reverse().map((m) => ({
+        role: m.role === "USER" ? "user" : "assistant",
+        content: m.content ?? "",
+      }));
 
     const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       {
