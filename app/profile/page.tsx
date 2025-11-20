@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -19,6 +19,31 @@ import { Card } from "@/components/Card";
 type Tab = "overview" | "health" | "conditions" | "memories" | "chat";
 
 export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <PageShell contentClassName="px-4">
+          <main className="flex flex-1 items-center justify-center pb-16 pt-32">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center"
+            >
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#174D3A]/10 mb-4">
+                <Shield className="h-6 w-6 text-[#174D3A] animate-pulse" />
+              </div>
+              <p className="text-[#174D3A]">Loading your space...</p>
+            </motion.div>
+          </main>
+        </PageShell>
+      }
+    >
+      <ProfilePageContent />
+    </Suspense>
+  );
+}
+
+function ProfilePageContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
