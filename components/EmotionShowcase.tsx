@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import "@/types/lottie-player";
 
 const EMOTION_ASSETS = {
   mindfull_chill: {
