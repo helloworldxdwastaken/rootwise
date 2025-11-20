@@ -1,26 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "lottie-player": React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
-        HTMLElement
-      > & {
-        src: string;
-        autoplay?: boolean;
-        loop?: boolean;
-        mode?: string;
-        background?: string;
-        speed?: number | string;
-        style?: React.CSSProperties;
-      };
-    }
-  }
-}
+type LottiePlayerProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLElement>,
+  HTMLElement
+> & {
+  src: string;
+  autoplay?: boolean;
+  loop?: boolean;
+  mode?: string;
+  background?: string;
+  speed?: number | string;
+  style?: React.CSSProperties;
+};
+
+const LottiePlayer = (props: LottiePlayerProps) =>
+  React.createElement("lottie-player", props);
 
 const EMOTION_ASSETS = {
   mindfull_chill: {
@@ -101,7 +98,7 @@ export function EmotionShowcase({
     <div className={cn("flex flex-col items-center text-center gap-4", className)}>
       <div className="flex w-full items-center justify-center">
         {isPlayerReady ? (
-          <lottie-player
+          <LottiePlayer
             autoplay
             loop
             mode="normal"
