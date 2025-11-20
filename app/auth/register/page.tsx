@@ -64,7 +64,7 @@ export default function RegisterPage() {
       if (result?.error) {
         setError("Registration successful, but login failed. Please try logging in.");
       } else {
-        router.push("/profile");
+        router.push("/personal/overview");
         router.refresh();
       }
     } catch (error) {
@@ -245,4 +245,3 @@ export default function RegisterPage() {
     </PageShell>
   );
 }
-

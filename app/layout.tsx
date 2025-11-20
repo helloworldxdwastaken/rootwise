@@ -38,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden scroll-smooth">
-      <body className={`${poppins.className} antialiased overflow-x-hidden`}>
+      <body suppressHydrationWarning className={`${poppins.className} antialiased overflow-x-hidden`}>
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

@@ -61,6 +61,18 @@ export function HealthProfileSection() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const languageOptions = [
+    { value: "en", label: "English" },
+    { value: "es", label: "Spanish" },
+    { value: "he", label: "Hebrew" },
+    { value: "fr", label: "French" },
+    { value: "de", label: "German" },
+    { value: "pt", label: "Portuguese" },
+    { value: "ru", label: "Russian" },
+    { value: "ar", label: "Arabic" },
+    { value: "hi", label: "Hindi" },
+    { value: "zh", label: "Chinese (Mandarin)" },
+  ];
 
   useEffect(() => {
     async function loadProfile() {
@@ -184,13 +196,22 @@ export function HealthProfileSection() {
             <label className="block text-sm font-medium text-[#174D3A] mb-2">
               Preferred Language
             </label>
-            <input
-              type="text"
+            <select
               value={formData.preferredLanguage}
               onChange={(e) => setFormData({ ...formData, preferredLanguage: e.target.value })}
-              placeholder="en, es, he"
               className="w-full rounded-2xl border border-white/30 bg-white/70 px-4 py-2.5 text-sm transition-all focus:border-[#174D3A]/60 focus:outline-none focus:ring-2 focus:ring-[#174D3A]/40"
-            />
+            >
+              <option value="">Select language</option>
+              {languageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+              {formData.preferredLanguage &&
+                !languageOptions.some((opt) => opt.value === formData.preferredLanguage) && (
+                  <option value={formData.preferredLanguage}>{formData.preferredLanguage}</option>
+                )}
+            </select>
           </div>
         </div>
       </Card>
@@ -331,4 +352,3 @@ export function HealthProfileSection() {
     </form>
   );
 }
-

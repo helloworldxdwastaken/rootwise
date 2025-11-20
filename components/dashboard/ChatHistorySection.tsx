@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
-import { Send, MessageCircle, User, Sparkles, Plus } from "lucide-react";
-import { motion } from "framer-motion";
+import { Send, MessageCircle, User, Sparkles, Plus, Trash2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type ChatSession = {
   id: string;
@@ -34,6 +35,19 @@ export function ChatHistorySection() {
   const [loading, setLoading] = useState(true);
   const [messageInput, setMessageInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const renderMessageContent = (message: ChatMessage) => {
+    if (message.role === "ASSISTANT") {
+      return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} className="markdown-message text-sm leading-relaxed">
+          {message.content}
+        </ReactMarkdown>
+      );
+    }
+
+    return <span className="whitespace-pre-wrap">{message.content}</span>;
+  };
 
   useEffect(() => {
     loadSessions();
@@ -45,16 +59,25 @@ export function ChatHistorySection() {
     }
   }, [selectedSession]);
 
-  async function loadSessions() {
+  async function loadSessions(preserveSelection: boolean = true) {
     try {
       const response = await fetch("/api/chat/session");
       if (response.ok) {
         const data = await response.json();
         setSessions(data.sessions || []);
-        // Auto-select first session
-        if (data.sessions && data.sessions.length > 0) {
-          setSelectedSession(data.sessions[0].id);
-        }
+        setSelectedSession((prev) => {
+          if (
+            preserveSelection &&
+            prev &&
+            data.sessions?.some((s: ChatSession) => s.id === prev)
+          ) {
+            return prev;
+          }
+
+          return data.sessions && data.sessions.length > 0
+            ? data.sessions[0].id
+            : null;
+        });
       }
     } catch (error) {
       console.error("Failed to load sessions:", error);
@@ -85,7 +108,7 @@ export function ChatHistorySection() {
       
       if (response.ok) {
         const data = await response.json();
-        await loadSessions();
+        await loadSessions(false);
         setSelectedSession(data.session.id);
       }
     } catch (error) {
@@ -132,6 +155,44 @@ export function ChatHistorySection() {
     }
   }
 
+  async function handleDeleteSession(sessionId: string) {
+    if (!sessionId || deletingId) return;
+    const confirmDelete = confirm("Delete this chat session and its messages?");
+    if (!confirmDelete) return;
+
+    setDeletingId(sessionId);
+    try {
+      const response = await fetch(`/api/chat/session/${sessionId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        const wasActive = selectedSession === sessionId;
+
+        setSessions((prev) => {
+          const updated = prev.filter((session) => session.id !== sessionId);
+          setSelectedSession((current) => {
+            if (current === sessionId) {
+              const next = updated[0]?.id ?? null;
+              return next;
+            }
+            return current;
+          });
+          return updated;
+        });
+
+        if (wasActive) {
+          setMessages([]);
+        }
+      } else {
+        console.error("Failed to delete session");
+      }
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   if (loading) {
     return <div className="py-8 text-center text-[#174D3A]">Loading chat history...</div>;
   }
@@ -144,12 +205,21 @@ export function ChatHistorySection() {
           <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-[#174D3A]">
             Sessions
           </h3>
-          <button
-            onClick={handleCreateSession}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#174D3A]/10 text-[#174D3A] hover:bg-[#174D3A]/20"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCreateSession}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#174D3A]/10 text-[#174D3A] hover:bg-[#174D3A]/20"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => selectedSession && handleDeleteSession(selectedSession)}
+              disabled={!selectedSession || deletingId === selectedSession}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#F26C63]/30 text-[#F26C63] transition hover:bg-[#F26C63]/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {sessions.length === 0 ? (
@@ -199,7 +269,7 @@ export function ChatHistorySection() {
       </div>
 
       {/* Messages View */}
-      <Card className="bg-white/40 flex flex-col min-h-[500px]">
+      <Card className="bg-white/40 flex h-[520px] flex-col sm:h-[580px] lg:h-[640px]">
         {!selectedSession ? (
           <div className="flex-1 flex items-center justify-center text-[#222222]/60">
             Select a session to view messages
@@ -228,7 +298,7 @@ export function ChatHistorySection() {
                       <div className="flex items-start gap-2">
                         {message.role === "ASSISTANT" && <Sparkles className="h-3 w-3 mt-0.5 flex-shrink-0" />}
                         {message.role === "USER" && <User className="h-3 w-3 mt-0.5 flex-shrink-0" />}
-                        <span className="whitespace-pre-wrap">{message.content}</span>
+                        {renderMessageContent(message)}
                       </div>
                       <p className="text-[0.65rem] opacity-70 mt-1">
                         {new Date(message.createdAt).toLocaleTimeString()}
@@ -254,7 +324,7 @@ export function ChatHistorySection() {
                 </Button>
               </div>
               <p className="text-xs text-[#222222]/60 mt-2">
-                💡 AI-powered responses using Google Gemini. Messages auto-save to your history.
+                💡 AI responses powered by Groq Llama 3.1. Messages auto-save to your history.
               </p>
             </form>
           </>
@@ -263,4 +333,3 @@ export function ChatHistorySection() {
     </div>
   );
 }
-

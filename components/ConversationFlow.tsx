@@ -110,6 +110,11 @@ const demoConversation: DemoMessage[] = [
 const initialMessages: Message[] = [];
 
 export function ConversationFlow() {
+  const generateId = () =>
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [mode, setMode] = useState<ConversationMode>(null);
   const [stepIndex, setStepIndex] = useState(0);
@@ -118,56 +123,61 @@ export function ConversationFlow() {
   const [profileDraft, setProfileDraft] = useState<ProfileDraft>({});
   const [isComplete, setIsComplete] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [demoIndex, setDemoIndex] = useState(0);
-  const [isDemoRunning, setIsDemoRunning] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-play demo conversation
   useEffect(() => {
     playDemoConversation();
+    return () => {
+      demoTimeouts.current.forEach((id) => clearTimeout(id));
+      demoTimeouts.current = [];
+    };
   }, []);
 
   function playDemoConversation() {
+    demoTimeouts.current.forEach((id) => clearTimeout(id));
+    demoTimeouts.current = [];
     let currentDelay = 500; // Start delay
-    let messageCounter = 0;
     
     demoConversation.forEach((msg, index) => {
       currentDelay += msg.delay;
       
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
+        const baseId = generateId();
+
         if (msg.role === "guide") {
           setIsTyping(true);
-          setTimeout(() => {
+          const innerTimeout = setTimeout(() => {
             setIsTyping(false);
-            messageCounter++;
-            // Add message fully formed (no typing animation to prevent layout shift)
             setMessages((prev) => [...prev, {
-              id: `demo-guide-${index}-${messageCounter}`,
+              id: `${baseId}-guide`,
               role: "guide",
               content: msg.content,
               citations: msg.citations,
             }]);
           }, 800);
+          demoTimeouts.current.push(innerTimeout);
         } else {
-          messageCounter++;
-          // User messages appear instantly
           setMessages((prev) => [...prev, {
-            id: `demo-user-${index}-${messageCounter}`,
+            id: `${baseId}-user`,
             role: "user",
             content: msg.content,
           }]);
         }
         
         if (index === demoConversation.length - 1) {
-          setTimeout(() => {
+          const completionTimeout = setTimeout(() => {
             setIsComplete(true);
             // Auto-restart after 5 seconds
-            setTimeout(() => {
+            const restartTimeout = setTimeout(() => {
               handleReset();
             }, 5000);
+            demoTimeouts.current.push(restartTimeout);
           }, 2000);
+          demoTimeouts.current.push(completionTimeout);
         }
       }, currentDelay);
+      demoTimeouts.current.push(timeoutId);
     });
   }
 
@@ -215,7 +225,7 @@ export function ConversationFlow() {
     
     // User message appears immediately
     const userMessage = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       role: "user" as const,
       content:
         selected === "issue"
@@ -224,7 +234,7 @@ export function ConversationFlow() {
     };
     
     const response1 = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       role: "guide" as const,
       content:
         selected === "issue"
@@ -233,7 +243,7 @@ export function ConversationFlow() {
     };
     
     const response2 = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       role: "guide" as const,
       content: (selected === "issue" ? issueFlow : goalFlow)[0].question,
     };
@@ -256,7 +266,7 @@ export function ConversationFlow() {
     setInputValue("");
 
     appendMessage({
-      id: crypto.randomUUID(),
+      id: generateId(),
       role: "user",
       content: value,
     });
@@ -278,7 +288,7 @@ export function ConversationFlow() {
     if (nextIndex < steps.length) {
       const nextStep = steps[nextIndex];
       appendMessageWithTyping({
-        id: crypto.randomUUID(),
+        id: generateId(),
         role: "guide",
         content: nextStep.question,
       }, 1000);
@@ -294,14 +304,19 @@ export function ConversationFlow() {
   function finalizeConversation() {
     setIsComplete(true);
     appendMessageWithTyping({
-      id: crypto.randomUUID(),
+      id: generateId(),
       role: "guide",
       content:
         "Perfect. I'll tuck that away and draft a gentle plan with foods, herbs, rituals and safety notes tailored to you.",
     }, 1000);
   }
 
-  function handleReset() {
+  const demoTimeouts = useRef<NodeJS.Timeout[]>([]);
+
+  function handleReset(shouldRestartDemo: boolean = true) {
+    demoTimeouts.current.forEach((id) => clearTimeout(id));
+    demoTimeouts.current = [];
+
     setMessages([]);
     setMode(null);
     setSessionDraft({});
@@ -309,14 +324,12 @@ export function ConversationFlow() {
     setStepIndex(0);
     setInputValue("");
     setIsComplete(false);
-    setIsDemoRunning(false);
-    setDemoIndex(0);
-    
-    // Restart demo
-    setTimeout(() => {
-      setIsDemoRunning(true);
-      playDemoConversation();
-    }, 500);
+    if (shouldRestartDemo) {
+      const restart = setTimeout(() => {
+        playDemoConversation();
+      }, 500);
+      demoTimeouts.current.push(restart);
+    }
   }
 
   const sessionSummary = useMemo(() => {

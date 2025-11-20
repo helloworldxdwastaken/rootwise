@@ -1,27 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Shield } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { SectionContainer } from "@/components/SectionContainer";
 import { Button } from "@/components/Button";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { OverviewSection } from "@/components/dashboard/OverviewSection";
 import { HealthProfileSection } from "@/components/dashboard/HealthProfileSection";
 import { ConditionsSection } from "@/components/dashboard/ConditionsSection";
 import { MemoriesSection } from "@/components/dashboard/MemoriesSection";
 import { ChatHistorySection } from "@/components/dashboard/ChatHistorySection";
+import { Card } from "@/components/Card";
 
 type Tab = "overview" | "health" | "conditions" | "memories" | "chat";
 
 export default function ProfilePage() {
   const { status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const searchParams = useSearchParams();
+  const tabParam = (searchParams.get("tab") as Tab | null) ?? null;
+  const tabs: Tab[] = ["overview", "health", "conditions", "memories", "chat"];
+  const activeTab = useMemo<Tab | null>(
+    () => (tabParam && tabs.includes(tabParam) ? tabParam : null),
+    [tabParam]
+  );
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -68,20 +74,35 @@ export default function ProfilePage() {
     );
   }
 
+  const renderActiveSection = () => {
+    switch (activeTab) {
+      case "overview":
+        return <OverviewSection />;
+      case "health":
+        return <HealthProfileSection />;
+      case "conditions":
+        return <ConditionsSection />;
+      case "memories":
+        return <MemoriesSection />;
+      case "chat":
+        return <ChatHistorySection />;
+      default:
+        return (
+          <Card className="bg-white/40 text-center py-10">
+            <p className="text-sm text-[#174D3A]">
+              Choose a view from the profile menu in the top navigation.
+            </p>
+          </Card>
+        );
+    }
+  };
+
   return (
     <PageShell contentClassName="px-4">
       <main className="flex flex-1 pb-16">
         <SectionContainer className="w-full justify-center gap-8 pt-16">
           <DashboardLayout>
-            <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} />
-            
-            <div className="py-8">
-              {activeTab === "overview" && <OverviewSection />}
-              {activeTab === "health" && <HealthProfileSection />}
-              {activeTab === "conditions" && <ConditionsSection />}
-              {activeTab === "memories" && <MemoriesSection />}
-              {activeTab === "chat" && <ChatHistorySection />}
-            </div>
+            <div className="py-8">{renderActiveSection()}</div>
           </DashboardLayout>
         </SectionContainer>
       </main>

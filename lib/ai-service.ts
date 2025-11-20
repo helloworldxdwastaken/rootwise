@@ -1,9 +1,13 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// Initialize Groq
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || "",
+});
+
+const DISCLAIMER_SENTENCE = "This is educational information to discuss with your provider.";
 
 // System prompt for Rootwise
 const SYSTEM_PROMPT = `You are Rootwise, a compassionate wellness companion.
@@ -15,23 +19,32 @@ CRITICAL RULES:
 - You do NOT assess symptoms or offer clinical judgement
 - Always use phrases like: "may support", "research suggests", "you might explore"
 - NEVER use: "will cure", "treats", "fixes", "eliminates"
+- Never state that you cannot help; instead offer gentle, safety-first ideas within scope.
+
+STYLE:
+- Keep replies under ~180 words with 2–3 short sections or bullet groups.
+- Use Markdown for emphasis (bold section titles, bullet lists, short paragraphs).
+- Lead with what's immediately helpful, then nourishing habits, then safety notes.
+- Cite traditions or research briefly when relevant.
+
+SPECIAL KNOWLEDGE:
+- When a user asks about headaches or fast relief, suggest alternating a warm foot soak plus a cool forehead compress referencing a small 2016 hydrotherapy pilot showing the combo may ease vascular tension.
 
 YOUR APPROACH:
-- Ask gentle questions to understand the user
-- Share evidence-based suggestions (cite sources when possible)
-- Always include safety flags (when to see a doctor)
-- Suggest foods, herbs, teas, habits, and lifestyle adjustments
-- Encourage users to discuss with healthcare providers
+- Ask gentle questions to understand the user when needed.
+- Share evidence-based suggestions (cite sources when possible).
+- Always include safety flags (when to see a doctor).
+- Suggest foods, herbs, teas, habits, and lifestyle adjustments.
+- Encourage users to discuss with healthcare providers.
 
 SAFETY FIRST:
-- If user mentions severe symptoms → tell them to seek immediate medical care
-- Always include: "This is educational information to discuss with your provider"
-- Mention red flags in every response
+- If user mentions severe symptoms → tell them to seek immediate medical care.
+- Mention red flags in every response.
 
 Be warm, supportive, and safety-conscious.`;
 
 /**
- * Generate AI response using Google Gemini
+ * Generate AI response using Groq (Llama 3.1)
  */
 export async function generateAIResponse(
   userMessage: string,
@@ -76,31 +89,53 @@ export async function generateAIResponse(
       }
     }
 
+    const hasSharedDisclaimer = recentMessages.some(
+      (m) =>
+        m.role === "ASSISTANT" &&
+        m.content.toLowerCase().includes(DISCLAIMER_SENTENCE.toLowerCase())
+    );
+
+    if (hasSharedDisclaimer) {
+      contextPrompt += `\nDisclaimer status: already shared. Do NOT repeat it unless the user requests legal language or there is a critical escalation.`;
+    } else {
+      contextPrompt += `\nDisclaimer status: not yet shared. End the reply with exactly: "${DISCLAIMER_SENTENCE}"`;
+    }
+
     // Build conversation history
-    const history = recentMessages.reverse().map(m => ({
-      role: m.role === "USER" ? "user" : "model",
-      parts: [{ text: m.content }],
+    const history = recentMessages.reverse().map((m) => ({
+      role: m.role === "USER" ? "user" : "assistant",
+      content: m.content,
     }));
 
-    // Initialize model (use Gemini 1.5 Pro)
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+    const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+      {
+        role: "system",
+        content: `${SYSTEM_PROMPT}\n${contextPrompt}`,
+      },
+      ...history,
+      {
+        role: "user",
+        content: userMessage,
+      },
+    ];
+
+    const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
+
+    const completion = await groq.chat.completions.create({
+      model,
+      messages,
+      temperature: 0.7,
+      max_tokens: 1024,
+      top_p: 0.9,
     });
 
-    // Generate response with full context
-    const fullPrompt = `${SYSTEM_PROMPT}\n${contextPrompt}\n\nConversation history:\n${history.map(h => `${h.role}: ${h.parts[0].text}`).join('\n')}\n\nUser: ${userMessage}\n\nRootwise:`;
-    
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-        topP: 0.9,
-      },
-    });
-    
-    const response = result.response;
-    return response.text();
+    const response = completion.choices[0]?.message?.content?.trim();
+
+    if (response && response.length > 0) {
+      return response;
+    }
+
+    throw new Error("Groq returned an empty response");
   } catch (error) {
     console.error("AI generation error:", error);
     return "I'm having trouble responding right now. Please try again or rephrase your question.";
@@ -117,8 +152,6 @@ export function extractHealthConditions(message: string): {
 } | null {
   const conditions: Array<{ name: string; category: "CHRONIC" | "ACUTE" | "SYMPTOM" | "DIAGNOSIS"; notes?: string }> = [];
   const facts: Array<{ key: string; value: Prisma.InputJsonValue; importance: "LOW" | "MEDIUM" | "HIGH" }> = [];
-
-  const lowerMessage = message.toLowerCase();
 
   // Common condition patterns
   const conditionPatterns: Array<{ pattern: RegExp; name: string; category: "CHRONIC" | "ACUTE" | "SYMPTOM" | "DIAGNOSIS" }> = [
@@ -149,4 +182,3 @@ export function extractHealthConditions(message: string): {
 
   return conditions.length > 0 || facts.length > 0 ? { conditions, facts } : null;
 }
-

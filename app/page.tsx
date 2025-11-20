@@ -143,6 +143,58 @@ const faqs = [
   },
 ];
 
+const pricingTiers = [
+  {
+    name: "Rootwise Free",
+    price: "Free",
+    interval: "",
+    badge: "Starter",
+    description: "Try the basics with simple chat and a supportive community.",
+    features: [
+      "Basic chat",
+      "Light insights",
+      "Limited memory window",
+      "Up to 12 tracked symptoms/conditions",
+    ],
+    cta: "Start free",
+    highlighted: false,
+  },
+  {
+    name: "Rootwise Plus",
+    price: "$8–12",
+    interval: "/mo",
+    badge: "Most popular",
+    description: "Go deeper with richer memory and weekly check-ins.",
+    features: [
+      "Everything in Free +",
+      "Full memory",
+      "Long-term pattern analysis",
+      "Rich symptom tracking",
+      "Health story tracking",
+      "AI guided",
+      "Weekly reports",
+    ],
+    cta: "Upgrade to Plus",
+    highlighted: true,
+  },
+  {
+    name: "Rootwise Pro",
+    price: "$15–20",
+    interval: "/mo",
+    badge: "For power users",
+    description: "Integrate data and export care-ready summaries.",
+    features: [
+      "Everything in Plus +",
+      "Integrations: Apple Health, Fitbit, Garmin, Oura",
+      "Predictive analytics",
+      "Doctor-ready reports",
+      "Monthly health summary PDF",
+    ],
+    cta: "Explore Pro",
+    highlighted: false,
+  },
+];
+
 export default function Home() {
   return (
     <PageShell>
@@ -417,72 +469,133 @@ function PricingSection() {
       >
         <SectionHeading
           id="pricing-heading"
-          eyebrow="Early access"
-          title="Start free. Upgrade when it feels right."
-          description="During early access, you can try Rootwise for free. We're working on gentle monthly pricing for unlimited personalized plans."
+          eyebrow="Plans"
+          title="Start free, upgrade when you want more"
+          description="Pick the level of support that fits you today. Move between plans anytime."
         />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[36px] border border-[#E9E0D7] bg-gradient-to-br from-[#FEFCFA] via-[#FBF7F2] to-[#F4EADC] p-10 shadow-[0_25px_65px_rgba(20,16,12,0.14)]">
-            <div className="flex h-full flex-col">
-              <div>
-                <p className="text-[38px] font-semibold text-[#1E140D]">Free</p>
-                <p className="mt-4 text-lg text-[#4A3F39]">
-                  Explore Rootwise while we learn from your feedback and keep improving.
-                </p>
-              </div>
-              <div className="mt-auto flex flex-col gap-6 pt-10">
-                <div className="flex flex-col text-[#1E140D]">
-                  <span className="text-sm uppercase tracking-[0.3em] text-[#C0B7AF]">Intro</span>
-                  <div className="mt-2 flex items-end gap-2">
-                    <span className="text-[50px] font-semibold leading-none">₪0</span>
-                    <span className="text-base text-[#948A83]">/ month</span>
+        <div className="grid gap-8 lg:grid-cols-3 xl:gap-10">
+          {pricingTiers.map((tier) =>
+            tier.highlighted ? (
+              <div
+                key={tier.name}
+                className="relative rounded-[36px] bg-gradient-to-r from-[#F6D365] via-[#9FE080] to-[#8BC6FF] p-[3px] animate-gradient-rotate"
+              >
+                <div className="flex h-full flex-col gap-8 rounded-[33px] bg-[#050505] p-10 text-white sm:p-12">
+                  <div className="flex items-start gap-3">
+                    <p className="text-[30px] font-semibold tracking-tight sm:text-[34px]">
+                      {tier.name}
+                    </p>
+                    <span className="mt-0.5 inline-flex h-8 items-center rounded-full bg-gradient-to-r from-[#F6D365] via-[#9FE080] to-[#8BC6FF] pl-4 pr-3 text-[11px] font-black uppercase tracking-[0.25em] text-[#050505] shadow-[0_8px_20px_rgba(0,0,0,0.25)] leading-[1.1] text-left">
+                      {tier.badge}
+                    </span>
                   </div>
-                </div>
-                <div>
+                  <p className="text-base text-white/75">{tier.description}</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[46px] font-semibold leading-none sm:text-[50px]">
+                      {tier.price}
+                    </span>
+                    <span className="text-base text-white/70">{tier.interval}</span>
+                  </div>
+                  <ul className="space-y-3 text-sm leading-6 text-white/85">
+                    {tier.features.map((feature, index) => {
+                      const showBullet = !(index === 0 && feature.startsWith("Everything in"));
+                      const lines = feature.split("\n").filter(Boolean);
+                      const title = lines[0] ?? feature;
+                      const subItems = lines.slice(1).map((line) => line.replace(/^-?\s*/, "")).filter(Boolean);
+
+                      return (
+                        <li key={feature} className="flex items-start gap-2">
+                          {showBullet ? (
+                            <span className="mt-1 h-2 w-2 rounded-full bg-white" />
+                          ) : (
+                            <span className="mt-1 w-2" />
+                          )}
+                          <div className="space-y-2">
+                            <span className="whitespace-pre-line">{title}</span>
+                            {subItems.length > 0 && (
+                              <ul className="ml-3 space-y-1 text-xs leading-5 text-white/80">
+                                {subItems.map((item) => (
+                                  <li key={item} className="flex items-start gap-1.5">
+                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white" />
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
                   <Button
                     variant="unstyled"
                     href="#pricing"
-                    className="w-full max-w-[200px] justify-center rounded-full bg-black px-9 py-3 text-white shadow-[0_10px_25px_rgba(0,0,0,0.25)] hover:bg-black/95"
+                    className="mt-auto w-full max-w-[260px] self-center justify-center rounded-full bg-white px-10 py-3.5 text-[#0a0a0a] font-semibold shadow-[0_12px_30px_rgba(0,0,0,0.2)] transition hover:bg-white/90"
                   >
-                    Get Started
+                    {tier.cta}
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-          <div className="relative rounded-[36px] p-[3px] bg-gradient-to-r from-[#F6D365] via-[#9FE080] to-[#8BC6FF] animate-gradient-rotate">
-            <div className="rounded-[33px] bg-[#050505] p-10 text-[#F8F5F0] h-full">
-            <div className="flex h-full flex-col">
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[38px] font-semibold tracking-tight text-white">Rootwise</span>
-                  <span className="rounded-full bg-gradient-to-r from-[#F6D365] via-[#9FE080] to-[#8BC6FF] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#050505]">
-                    Plus
-                  </span>
-                </div>
-                <p className="mt-4 text-lg text-white/80">
-                  Gentle monthly plan with unlimited personalized guidance and new safety features.
-                </p>
-              </div>
-              <div className="mt-auto flex flex-col gap-6 pt-10">
-                <div>
-                  <p className="text-sm text-white/40 line-through">₪29.2</p>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-[50px] font-semibold leading-none text-white">₪17.5</span>
-                    <span className="text-base text-white/70">/ month</span>
+            ) : (
+              <Card key={tier.name} className="h-full bg-white/55 p-10 sm:p-12">
+                <div className="flex h-full flex-col gap-7">
+                  <div className="flex items-start gap-3">
+                    <p className="text-[30px] font-semibold text-[#174D3A] sm:text-[34px]">
+                      {tier.name}
+                    </p>
+                    <span className="mt-0.5 inline-flex h-8 items-center rounded-full bg-white/60 px-3 text-xs font-semibold uppercase tracking-[0.25em] text-[#174D3A]/80 leading-[1.1] text-left">
+                      {tier.badge}
+                    </span>
                   </div>
+                  <p className="text-base text-[#222222]/80">{tier.description}</p>
+                  <div className="flex items-baseline gap-2 text-[#1E140D]">
+                    <span className="text-[46px] font-semibold leading-none sm:text-[50px]">
+                      {tier.price}
+                    </span>
+                    <span className="text-base text-[#948A83]">{tier.interval}</span>
+                  </div>
+                  <ul className="space-y-3 text-sm leading-6 text-[#222222]/80">
+                    {tier.features.map((feature, index) => {
+                      const showBullet = !(index === 0 && feature.startsWith("Everything in"));
+                      const lines = feature.split("\n").filter(Boolean);
+                      const title = lines[0] ?? feature;
+                      const subItems = lines.slice(1).map((line) => line.replace(/^-?\s*/, "")).filter(Boolean);
+
+                      return (
+                        <li key={feature} className="flex items-start gap-2">
+                          {showBullet ? (
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[#174D3A]" />
+                          ) : (
+                            <span className="mt-1 w-2" />
+                          )}
+                          <div className="space-y-2">
+                            <span className="whitespace-pre-line">{title}</span>
+                            {subItems.length > 0 && (
+                              <ul className="ml-3 space-y-1 text-xs leading-5 text-[#174D3A]/80">
+                                {subItems.map((item) => (
+                                  <li key={item} className="flex items-start gap-1.5">
+                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#174D3A]" />
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <Button
+                    variant="unstyled"
+                    href="#pricing"
+                    className="mt-auto w-full max-w-[260px] self-center justify-center rounded-full bg-[#0a0a0a] px-10 py-3.5 text-white font-semibold shadow-[0_12px_30px_rgba(0,0,0,0.45)] transition hover:bg-[#0a0a0a]/90"
+                  >
+                    {tier.cta}
+                  </Button>
                 </div>
-                <Button
-                  variant="unstyled"
-                  href="#pricing"
-                  className="w-full max-w-[200px] justify-center rounded-full bg-white/95 px-9 py-3 text-[#050505] shadow-[0_12px_30px_rgba(0,0,0,0.45)] transition hover:bg-white"
-                >
-                  Upgrade to Plus
-                </Button>
-              </div>
-            </div>
-            </div>
-          </div>
+              </Card>
+            )
+          )}
         </div>
       </SectionContainer>
     </AnimatedSection>

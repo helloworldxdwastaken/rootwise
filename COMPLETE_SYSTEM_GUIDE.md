@@ -19,7 +19,7 @@
 - **Lucide React 0.554.0** - Icon library
 
 **Backend & Database:**
-- **PostgreSQL** - Relational database
+- **PostgreSQL (Supabase)** - Managed relational database
 - **Prisma ORM 5.22.0** - Type-safe database client
 - **NextAuth.js 4.24.13** - Authentication
 - **@next-auth/prisma-adapter** - Database adapter for NextAuth
@@ -54,11 +54,11 @@ Next.js App Router Architecture:
 └─────────────┬───────────────────────┘
               │
 ┌─────────────▼───────────────────────┐
-│  Database (PostgreSQL + Prisma)     │
-│  - User data                        │
-│  - Patient profiles                 │
-│  - Chat history                     │
-│  - Conditions & memories            │
+│  Database (Supabase Postgres + Prisma) │
+│  - User data                           │
+│  - Patient profiles                    │
+│  - Chat history                        │
+│  - Conditions & memories               │
 └─────────────────────────────────────┘
 ```
 
@@ -134,6 +134,9 @@ rootwise/
 │   │   └── terms/
 │   ├── our-approach/
 │   │   └── page.tsx              # Philosophy page (Server)
+│   ├── personal/
+│   │   └── overview/
+│   │       └── page.tsx          # Calm personal dashboard (Client)
 │   ├── profile/
 │   │   └── page.tsx              # User profile (Client, Protected)
 │   ├── why-trust-rootwise/
@@ -148,6 +151,7 @@ rootwise/
 │   ├── Card.tsx                  # (Client) Card wrapper
 │   ├── ConversationFlow.tsx      # (Client) Chat demo widget
 │   ├── DisclaimerBanner.tsx      # (Client) Popup banner
+│   ├── EmotionShowcase.tsx       # (Client) Mood-based Lottie player
 │   ├── FAQItem.tsx               # (Client) Expandable FAQ
 │   ├── Footer.tsx                # (Client) Site footer
 │   ├── Hero.tsx                  # (Client) Hero section
@@ -174,9 +178,14 @@ rootwise/
 │   ├── download-badges/
 │   │   ├── app_store.png
 │   │   └── google_play.png
+│   ├── emotions/                # JSON Lottie animations for moods
+│   │   ├── mindfull_chill.json
+│   │   ├── tired_low.json
+│   │   └── productive.json
 │   └── leaf-icon.svg            # Exported icon
 ├── types/
-│   └── next-auth.d.ts           # NextAuth type extensions
+│   ├── next-auth.d.ts           # NextAuth type extensions
+│   └── lottie-player.d.ts       # Custom element typing for <lottie-player>
 ├── BACKEND_API.md               # API documentation
 ├── DEPLOYMENT.md                # Vercel deployment guide
 ├── README.md                    # Project overview
@@ -199,9 +208,21 @@ rootwise/
 - Interactive elements (Navbar, Footer, Chat demo)
 - Anything using useState, useEffect, onClick
 
+### Personal Overview Dashboard (`app/personal/overview/page.tsx`)
+
+This is the calm landing experience users hit after logging in. Key pieces:
+
+- **Energy Hero** – Uses `EmotionShowcase` + `/public/emotions/*` Lottie files to shift the illustration, emoji, and gradient labels based on the current energy score. The bar dynamically changes color between *Low → Calm → Energetic* and the emoji matches the state.
+- **Hydration Card** – Minimalist “Oura-style” glasses rendered via `HydrationCup` subcomponent. Flat rounded containers gently fill as `hydrationGlasses` increases with a streak badge and contextual micro-copy.
+- **Sleep + Daily Insights** – Sleep chip surfaces bedtime metadata, and an `AI insight` card (Sparkles icon) highlights a personalized coaching moment tied to the previous day’s behavior.
+- **Symptoms Card** – Grouped by category (Energy & Mood, Body Cues, Calming Wins) with icon, symptom name, and a single status tag (“Better today / Same / Worse”). Keeps the dashboard investor-friendly and avoids medical clutter.
+- **Weekly Patterns** – Left column contains tags and summary copy; right column shows a pastel curved chart with evenly spaced day labels underneath. The SVG is intentionally simple/soft to match the rest of the UI.
+
+All of these surfaces live inside `PageShell` so they inherit the same background gradients as marketing pages while still feeling like a product surface.
+
 ---
 
-## 3. **Database Setup (Prisma + PostgreSQL)**
+## 3. **Database Setup (Prisma + Supabase PostgreSQL)**
 
 ### Complete Prisma Schema
 
@@ -673,9 +694,9 @@ export async function GET() {
 └──────┬───────────────┘
        │
        ▼
-┌──────────────────────┐
-│ Redirect to /profile │
-└──────────────────────┘
+┌──────────────────────────────┐
+│ Redirect to /personal/overview │
+└──────────────────────────────┘
 ```
 
 ---
@@ -1773,73 +1794,54 @@ All are **read-only** informational pages.
 
 #### 1. **PatientProfile Frontend**
 
-**Status:** Backend complete, frontend NOT wired
-
-**What's missing:**
-- No form to edit dateOfBirth, sex, height, weight
-- ProfileForm.tsx only handles UserProfile (wellness flags)
-
-**TODO:**
-- Add PatientProfile form fields to `/profile` page
-- Include in form submission
-- Display clinical data
+| Status | Details | Work Needed |
+| --- | --- | --- |
+| ❌ Not built | `app/profile/page.tsx` renders `components/ProfileForm.tsx`, but that component only maps to `UserProfile` booleans. Fields like `dateOfBirth`, `sex`, `heightCm`, `weightKg`, `lifestyleNotes` never appear. API `PUT /api/me/profile` supports them, so data is stuck server-side. | Add PatientProfile section to `ProfileForm`, hydrate from `patientProfile` payload, submit updates with the same `PUT` call. Consider a separate card so clinical facts don’t mingle with dietary flags. |
 
 ---
 
-#### 2. **Conditions Management UI**
+#### 2. **Conditions Manager UI**
 
-**Status:** Backend complete, no frontend
-
-**What's missing:**
-- No UI to add/edit/delete conditions
-- No conditions list display
-
-**TODO:**
-- Create ConditionsManager component
-- Add to profile page
-- Fetch from `GET /api/me/conditions`
-- Create form for `POST /api/me/conditions`
+| Status | Details | Work Needed |
+| --- | --- | --- |
+| ❌ Not built | `/api/me/conditions` + `[id]` endpoints exist, but no React component uses them. Users cannot see, add, or deactivate conditions from the dashboard. | Create a ConditionsManager that lists active conditions, surfaces add/edit drawers, and toggles `isActive`. Mount it on `/profile` (or `/personal/overview` secondary tab) and wire to the REST endpoints. |
 
 ---
 
 #### 3. **Chat System Integration**
 
-**Status:** Backend ready, not connected to demo
+**Status:** Real chat + AI endpoints live (dashboard sections use them), homepage demo still mocked
+
+**Currently:**
+- `components/dashboard/ChatHistorySection.tsx` talks to `/api/chat/session` + `/api/chat/message`
+- `/api/chat/ai-response` persists user + assistant turns and auto-updates conditions/memories
+- `lib/ai-service.ts` uses Groq (Llama 3.1) with contextual prompts + safety rails
 
 **What's missing:**
-- Demo chat doesn't use real API
-- No AI integration
-- Messages not persisted
+- Marketing demo (`components/ConversationFlow.tsx`) still fakes responses
+- No public UI for editing chat memories/conditions created automatically
+- Need better surface to show extracted facts/conditions after each AI message
 
-**TODO:**
-- Connect ConversationFlow to `/api/chat/*`
-- Integrate AI service
-- Store real conversations
+**Next steps:**
+- Wire ConversationFlow to `/api/chat/*` for consistent experience
+- Add toast/inline UI in dashboard when AI auto-adds a condition or fact
+- Consider streaming responses for better UX
 
 ---
 
 #### 4. **User Memory UI**
 
-**Status:** Backend complete, no frontend
-
-**What's missing:**
-- No way to view memories
-- No UI to manage facts
-
-**TODO:**
-- Create MemoryViewer component
-- Show important facts to user
-- Allow manual memory management
+| Status | Details | Work Needed |
+| --- | --- | --- |
+| ❌ Not built | `/api/memory` endpoints and `UserMemory` model work, but there is no frontend experience to visualize or edit long-term facts. | Build a “Memories” tab (maybe inside `/profile?tab=memories`) that lists HIGH/MEDIUM facts, allows editing, and clarifies what AI remembered. |
 
 ---
 
 #### 5. **Database Migrations**
 
-**Status:** Schema defined, migrations NOT created
-
-**What's missing:**
-- No migration files yet
-- Database not updated
+| Status | Details | Work Needed |
+| --- | --- | --- |
+| ⚠️ Manual-only | `schema.prisma` has the full model set, but `prisma/migrations` is empty. Local dev relies on `prisma db push`, production relies on Vercel’s connection pooling + Supabase console. | Generate proper migrations (`npx prisma migrate dev`) and commit them. Run `prisma migrate deploy` in Supabase (or via Vercel build) so the hosted DB schema matches Git history. |
 
 **TODO:**
 ```bash
@@ -1854,18 +1856,30 @@ npx prisma migrate deploy
 
 #### 6. **AI Integration**
 
-**Status:** Endpoints ready, AI service not implemented
+**Status:** Implemented with Groq (Llama 3.1) + safety rails
 
-**What's needed:**
-- OpenAI/Anthropic API integration
-- Message processing logic
-- Condition extraction from text
-- Response generation
+**Key pieces:**
+- `lib/ai-service.ts` wraps Groq SDK. `generateAIResponse` builds a contextual prompt using:
+  - Recent chat history (last 10 messages)
+  - User conditions, memories, patient profile
+  - Disclaimer tracking so the medical disclaimer is only injected once per session
+- `extractHealthConditions` scans user text for simple regex matches (anemia, diabetes, etc.) and turns them into structured data for profile updates.
+- `/api/chat/ai-response` orchestrates the flow:
+  1. Authenticates the user/session
+  2. Saves the user message
+  3. Calls `generateAIResponse`
+  4. Persists the assistant reply
+  5. If `extractHealthConditions` returns data, lazily imports `profile-updater` helpers to upsert conditions or memories
+- Dashboard chat surfaces call this endpoint so every exchange is stored in Prisma.
 
-**TODO:**
-- Add AI service layer
-- Connect to chat endpoints
-- Implement `/api/chat/ai-response` endpoint
+**Environment variables:**
+- `GROQ_API_KEY` – required to talk to Groq
+- `GROQ_MODEL` – optional override (defaults to `llama-3.1-8b-instant`)
+
+**Still to improve:**
+- Better entity extraction (currently regex-based)
+- Richer safety escalation (e.g., route emergency phrases to a canned response immediately)
+- Streaming responses or typing indicators for UX polish
 
 ---
 
@@ -1953,7 +1967,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 ```bash
 # Via UI
 Visit http://localhost:3000/auth/login
-Enter credentials → Should redirect to /profile
+Enter credentials → Should redirect to /personal/overview
 
 # Via API
 curl -X POST http://localhost:3000/api/auth/callback/credentials \
@@ -2593,4 +2607,3 @@ Memory:          3 routes
 **Welcome to the team! 🌿**
 
 If you have questions, check the API docs or test the endpoints directly. The system is production-ready and waiting for AI integration.
-
