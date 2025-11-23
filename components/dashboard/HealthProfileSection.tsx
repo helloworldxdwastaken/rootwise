@@ -83,7 +83,7 @@ export function HealthProfileSection() {
         preferredLanguage: profileData.user?.preferredLanguage || "",
         timezone: profileData.user?.timezone || "",
         dateOfBirth: profileData.patientProfile?.dateOfBirth?.split("T")[0] || "",
-        sex: profileData.patientProfile?.sex || "UNKNOWN",
+        sex: (profileData.patientProfile?.sex || "UNKNOWN") as "MALE" | "FEMALE" | "OTHER" | "UNKNOWN",
         heightCm: profileData.patientProfile?.heightCm?.toString() || "",
         weightKg: profileData.patientProfile?.weightKg?.toString() || "",
         lifestyleNotes: profileData.patientProfile?.lifestyleNotes || "",
