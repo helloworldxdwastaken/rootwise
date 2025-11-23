@@ -8,33 +8,49 @@ export async function GET() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get last 7 days of health data
-    const weekData = [];
+    // OPTIMIZATION: Generate all date keys and fetch in ONE query
+    const dateKeys = [];
+    const dateMap = new Map<string, { date: string; dayName: string }>();
+    
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateKey = `health_${date.toISOString().split("T")[0]}`;
-
-      const dayData = await prisma.userMemory.findUnique({
-        where: {
-          userId_key: {
-            userId: user.id,
-            key: dateKey,
-          },
-        },
-      });
-
-      const data = (dayData?.value as any) || {};
-      weekData.push({
+      dateKeys.push(dateKey);
+      dateMap.set(dateKey, {
         date: date.toISOString().split("T")[0],
         dayName: date.toLocaleDateString("en-US", { weekday: "short" }),
+      });
+    }
+
+    // Batch fetch all 7 days in a single query
+    const weekMemories = await prisma.userMemory.findMany({
+      where: {
+        userId: user.id,
+        key: { in: dateKeys },
+      },
+    });
+
+    // Create a map for quick lookup
+    const memoriesMap = new Map(
+      weekMemories.map(m => [m.key, m.value])
+    );
+
+    // Build week data using the fetched results
+    const weekData = dateKeys.map(dateKey => {
+      const dateInfo = dateMap.get(dateKey)!;
+      const data = (memoriesMap.get(dateKey) as any) || {};
+      
+      return {
+        date: dateInfo.date,
+        dayName: dateInfo.dayName,
         energyScore: data.energyScore || null,
         sleepHours: data.sleepHours ? parseFloat(data.sleepHours) : null,
         hydrationGlasses: data.hydrationGlasses || 0,
         symptoms: data.symptoms || [],
         analyzedSymptoms: data.analyzedSymptoms || [],
-      });
-    }
+      };
+    });
 
     // Calculate patterns
     const energyScores = weekData.filter(d => d.energyScore !== null).map(d => d.energyScore);

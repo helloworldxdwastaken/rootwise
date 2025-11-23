@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Sparkles, Plus, Droplet, Moon, Battery } from "lucide-react";
+import { Sparkles, Plus, Droplet, Moon, Battery, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/PageShell";
 import { Footer } from "@/components/Footer";
 import { EmotionShowcase } from "@/components/EmotionShowcase";
 import type { EmotionKey } from "@/components/EmotionShowcase";
 import { OverviewChat } from "@/components/OverviewChat";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 
 type StripCardProps = {
   title: string;
@@ -35,24 +36,29 @@ export default function PersonalOverviewPage() {
   const [healthData, setHealthData] = useState<any>(null);
   const [weeklyData, setWeeklyData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [analyzingSymptoms, setAnalyzingSymptoms] = useState(false);
   
   useEffect(() => {
     async function loadHealthData() {
       try {
-        // Load today's data
-        const todayResponse = await fetch("/api/health/today");
+        // OPTIMIZATION 1: Load both endpoints in parallel
+        const [todayResponse, weeklyResponse] = await Promise.all([
+          fetch("/api/health/today"),
+          fetch("/api/health/weekly"),
+        ]);
+
+        // Process today's data
         if (todayResponse.ok) {
           const data = await todayResponse.json();
           setHealthData(data);
           
-          // Trigger AI symptom analysis if we have data
+          // OPTIMIZATION 2: Trigger AI analysis non-blocking (don't await)
           if (data.energyScore || data.sleepHours || data.hydrationGlasses > 0) {
             analyzeSymptoms();
           }
         }
 
-        // Load weekly patterns
-        const weeklyResponse = await fetch("/api/health/weekly");
+        // Process weekly data
         if (weeklyResponse.ok) {
           const weekly = await weeklyResponse.json();
           setWeeklyData(weekly);
@@ -67,6 +73,9 @@ export default function PersonalOverviewPage() {
   }, []);
 
   const analyzeSymptoms = async () => {
+    if (analyzingSymptoms) return; // Prevent duplicate calls
+    
+    setAnalyzingSymptoms(true);
     try {
       const response = await fetch("/api/health/analyze-symptoms", {
         method: "POST",
@@ -80,6 +89,8 @@ export default function PersonalOverviewPage() {
       }
     } catch (error) {
       console.error("Failed to analyze symptoms:", error);
+    } finally {
+      setAnalyzingSymptoms(false);
     }
   };
 
@@ -123,15 +134,25 @@ export default function PersonalOverviewPage() {
 
   const refreshHealthData = async () => {
     try {
-      const response = await fetch("/api/health/today");
-      if (response.ok) {
-        const data = await response.json();
+      // OPTIMIZATION: Parallel refresh
+      const [todayResponse, weeklyResponse] = await Promise.all([
+        fetch("/api/health/today"),
+        fetch("/api/health/weekly"),
+      ]);
+      
+      if (todayResponse.ok) {
+        const data = await todayResponse.json();
         setHealthData(data);
         
-        // Trigger symptom analysis
+        // Trigger symptom analysis (non-blocking)
         if (data.energyScore || data.sleepHours || data.hydrationGlasses > 0) {
           analyzeSymptoms();
         }
+      }
+      
+      if (weeklyResponse.ok) {
+        const weekly = await weeklyResponse.json();
+        setWeeklyData(weekly);
       }
     } catch (error) {
       console.error("Failed to refresh health data:", error);
@@ -140,9 +161,29 @@ export default function PersonalOverviewPage() {
 
   if (loading) {
     return (
-      <PageShell className="bg-[#fdf8f3]">
-        <main className="flex flex-1 items-center justify-center">
-          <p className="text-slate-500">Loading your wellness data...</p>
+      <PageShell className="bg-[#fdf8f3]" contentClassName="px-0 pb-0">
+        <main className="relative flex flex-1 flex-col gap-6 px-6 pt-16 pb-12">
+          <div className="relative mx-auto flex w-full max-w-[1600px] gap-6">
+            <div className="flex flex-1 flex-col gap-6">
+              {/* Hero Skeleton */}
+              <LoadingSkeleton className="h-96 w-full" />
+              
+              {/* Cards Skeleton */}
+              <div className="grid gap-4 md:grid-cols-3">
+                <LoadingSkeleton className="h-40 w-full" />
+                <LoadingSkeleton className="h-40 w-full" />
+                <LoadingSkeleton className="h-40 w-full" />
+              </div>
+              
+              {/* Symptoms Skeleton */}
+              <LoadingSkeleton className="h-64 w-full" />
+            </div>
+            
+            {/* Chat Skeleton */}
+            <div className="w-[400px]">
+              <LoadingSkeleton className="h-[700px] w-full" />
+            </div>
+          </div>
         </main>
       </PageShell>
     );
@@ -342,7 +383,13 @@ export default function PersonalOverviewPage() {
               )}
             </StripCard>
 
-            <StripCard title="AI Health Insights" className="h-full">
+            <StripCard title="AI Health Insights" className="h-full relative">
+              {analyzingSymptoms && (
+                <div className="absolute top-2 right-4 flex items-center gap-2 text-xs text-emerald-600">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>Analyzing...</span>
+                </div>
+              )}
               {analyzedSymptoms.length > 0 ? (
                 <div className="space-y-3 text-sm text-slate-700">
                   {symptomGroups.map((group) => (
@@ -373,17 +420,25 @@ export default function PersonalOverviewPage() {
                     </div>
                   ))}
                 </div>
+              ) : analyzingSymptoms ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
+                  <p className="text-sm text-slate-500">
+                    AI is analyzing your health patterns...
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-slate-500">
                     {energyScore || healthData?.sleepHours || hydrationGlasses > 0
-                      ? "AI is analyzing your health data..."
+                      ? "Ready for AI analysis"
                       : "Log your energy, sleep, or chat with AI to get personalized health insights."}
                   </p>
                   {(energyScore || healthData?.sleepHours || hydrationGlasses > 0) && (
                     <button
                       onClick={analyzeSymptoms}
-                      className="text-xs text-emerald-600 hover:underline"
+                      disabled={analyzingSymptoms}
+                      className="text-xs text-emerald-600 hover:underline disabled:opacity-50"
                     >
                       Analyze now
                     </button>

@@ -64,15 +64,29 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastFetch, setLastFetch] = useState<number>(0);
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (force = false) => {
     try {
+      // OPTIMIZATION: Client-side caching - only refetch if > 5 minutes old
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      if (!force && data && (now - lastFetch) < CACHE_DURATION) {
+        // Return cached data without fetching
+        return;
+      }
+
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/me/profile");
+      const response = await fetch("/api/me/profile", {
+        // Add cache control for browser caching
+        cache: force ? 'no-store' : 'default',
+      });
       if (response.ok) {
         const profileData = await response.json();
         setData(profileData);
+        setLastFetch(now);
       } else {
         setError("Failed to load profile");
       }
@@ -89,7 +103,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ProfileContext.Provider value={{ data, loading, error, refetch: fetchProfile }}>
+    <ProfileContext.Provider 
+      value={{ 
+        data, 
+        loading, 
+        error, 
+        refetch: () => fetchProfile(true) // Force refetch when manually called
+      }}
+    >
       {children}
     </ProfileContext.Provider>
   );
