@@ -132,6 +132,7 @@ function extractHealthInfo(userMessage: string, aiResponse: string): any {
 async function saveHealthData(userId: string, extractedData: any) {
   try {
     const { dateKey: todayKey, dateString, year, month, day } = getLocalDate();
+    const todayDate = getMidnightInLocalTimezone(dateString);
 
     // Get existing data for today (from UserMemory - quick access)
     const existing = await prisma.userMemory.findUnique({
@@ -184,8 +185,6 @@ async function saveHealthData(userId: string, extractedData: any) {
 
     // ALSO save to HealthJournal (permanent tracking) - one entry per symptom
     if (symptoms.length > 0) {
-      const todayDate = getMidnightInLocalTimezone(dateString);
-      
       for (const symptomName of symptoms) {
         // Check if this symptom is already logged today
         const existing = await prisma.healthJournal.findFirst({
@@ -287,7 +286,7 @@ async function saveHealthData(userId: string, extractedData: any) {
       await prisma.healthJournal.create({
         data: {
           userId,
-          date: today,
+          date: todayDate,
           symptomName: "Wellness Activity",
           energyLevel: extractedData.energyScore,
           notes: `Preventive/wellness activity: ${extractedData.interventions.join(', ')}. Via AI chat.`,
