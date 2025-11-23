@@ -130,9 +130,10 @@ function extractHealthInfo(userMessage: string, aiResponse: string): any {
 // Save extracted health data
 async function saveHealthData(userId: string, extractedData: any) {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayKey = `health_${today.toISOString().split("T")[0]}`;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Use LOCAL date, not UTC!
+    const todayKey = `health_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     // Get existing data for today (from UserMemory - quick access)
     const existing = await prisma.userMemory.findUnique({

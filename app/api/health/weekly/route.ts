@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const user = await getCurrentUser();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     // OPTIMIZATION: Generate all date keys and fetch in ONE query
     const dateKeys = [];
@@ -15,10 +15,11 @@ export async function GET() {
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateKey = `health_${date.toISOString().split("T")[0]}`;
+      // Use LOCAL date, not UTC (fixes timezone bug)
+      const dateKey = `health_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       dateKeys.push(dateKey);
       dateMap.set(dateKey, {
-        date: date.toISOString().split("T")[0],
+        date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
         dayName: date.toLocaleDateString("en-US", { weekday: "short" }),
       });
     }

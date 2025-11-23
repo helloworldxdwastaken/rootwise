@@ -5,12 +5,11 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const user = await getCurrentUser();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // For now, use UserMemory to store daily metrics
-    // Will migrate to HealthJournal table after Supabase maintenance
-    const todayKey = `health_${today.toISOString().split("T")[0]}`;
+    // Use LOCAL date, not UTC (fixes timezone bug)
+    const todayKey = `health_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const todayMetrics = await prisma.userMemory.findUnique({
       where: {
@@ -60,9 +59,10 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
     const body = await request.json();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayKey = `health_${today.toISOString().split("T")[0]}`;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Use LOCAL date, not UTC (fixes timezone bug)
+    const todayKey = `health_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const {
       energyScore,
