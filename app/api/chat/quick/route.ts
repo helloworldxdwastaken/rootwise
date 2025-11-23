@@ -53,6 +53,77 @@ function extractHealthInfo(userMessage: string, aiResponse: string): any {
     }
   }
 
+  // Extract triggers/causes (what caused the problem)
+  const triggerPatterns = [
+    { pattern: /because of ([^,.!?]+)/i, group: 1 },
+    { pattern: /due to ([^,.!?]+)/i, group: 1 },
+    { pattern: /from ([^,.!?]+)/i, group: 1 },
+    { pattern: /caused by ([^,.!?]+)/i, group: 1 },
+    { pattern: /after ([^,.!?]+)/i, group: 1 },
+    { pattern: /think it\'?s ([^,.!?]+)/i, group: 1 },
+  ];
+
+  for (const { pattern, group } of triggerPatterns) {
+    const match = userMessage.match(pattern);
+    if (match && match[group]) {
+      extracted.trigger = match[group].trim();
+      break;
+    }
+  }
+
+  // Extract what helped/worked (interventions, treatments, remedies)
+  const helpfulKeywords = [
+    "helped", "worked", "better", "improved", "relief", "eased", "reduced",
+    "fixed", "cured", "solved", "felt good", "feel great", "feeling better"
+  ];
+  
+  const interventionKeywords = [
+    "tea", "coffee", "water", "rest", "sleep", "walk", "exercise", "stretch",
+    "meditation", "yoga", "vitamin", "supplement", "medicine", "pill", "aspirin",
+    "ibuprofen", "massage", "heat", "ice", "cold", "warm", "bath", "shower",
+    "reducing screen time", "less screen time", "screen break", "break",
+    "deep breath", "breathing", "fresh air"
+  ];
+
+  const interventions: string[] = [];
+  
+  // Look for specific intervention patterns first
+  const interventionPatterns = [
+    { pattern: /([^,.!?]+)\s+(helped|worked|fixed|solved|eased|reduced)/i, group: 1 },
+    { pattern: /(helped|worked|fixed|solved|eased|reduced)\s+(?:by|with)\s+([^,.!?]+)/i, group: 2 },
+    { pattern: /after\s+([^,.!?]+)\s+(?:i\s+)?(?:felt|feel)\s+better/i, group: 1 },
+    { pattern: /(?:took|did|tried)\s+([^,.!?]+)\s+and\s+(?:it\s+)?(?:helped|worked)/i, group: 1 },
+  ];
+
+  for (const { pattern, group } of interventionPatterns) {
+    const match = userMessage.match(pattern);
+    if (match && match[group]) {
+      const intervention = match[group].trim();
+      if (intervention.length > 2 && intervention.length < 50) {
+        interventions.push(intervention);
+      }
+    }
+  }
+
+  // Also check for known intervention keywords
+  for (const helpful of helpfulKeywords) {
+    if (lowerMessage.includes(helpful)) {
+      for (const intervention of interventionKeywords) {
+        if (lowerMessage.includes(intervention)) {
+          const helpfulPos = lowerMessage.indexOf(helpful);
+          const interventionPos = lowerMessage.indexOf(intervention);
+          if (Math.abs(helpfulPos - interventionPos) < 50) {
+            interventions.push(intervention.charAt(0).toUpperCase() + intervention.slice(1));
+          }
+        }
+      }
+    }
+  }
+
+  if (interventions.length > 0) {
+    extracted.interventions = [...new Set(interventions)]; // Remove duplicates
+  }
+
   return Object.keys(extracted).length > 0 ? extracted : null;
 }
 
@@ -63,7 +134,7 @@ async function saveHealthData(userId: string, extractedData: any) {
     today.setHours(0, 0, 0, 0);
     const todayKey = `health_${today.toISOString().split("T")[0]}`;
 
-    // Get existing data for today
+    // Get existing data for today (from UserMemory - quick access)
     const existing = await prisma.userMemory.findUnique({
       where: {
         userId_key: {
@@ -91,7 +162,7 @@ async function saveHealthData(userId: string, extractedData: any) {
       lastUpdated: new Date().toISOString(),
     };
 
-    // Save to database
+    // Save to UserMemory (for quick access on overview page)
     await prisma.userMemory.upsert({
       where: {
         userId_key: {
@@ -111,6 +182,120 @@ async function saveHealthData(userId: string, extractedData: any) {
         lastUsedAt: new Date(),
       },
     });
+
+    // ALSO save to HealthJournal (permanent tracking) - one entry per symptom
+    if (symptoms.length > 0) {
+      for (const symptomName of symptoms) {
+        // Check if this symptom is already logged today
+        const existing = await prisma.healthJournal.findFirst({
+          where: {
+            userId,
+            date: today,
+            symptomName,
+          },
+        });
+
+        if (!existing) {
+          // NEW symptom - create entry with trigger if mentioned
+          await prisma.healthJournal.create({
+            data: {
+              userId,
+              date: today,
+              symptomName,
+              severity: extractedData.energyScore ? (11 - extractedData.energyScore) : undefined,
+              triggers: extractedData.trigger || null, // What caused it
+              energyLevel: extractedData.energyScore,
+              sleepQuality: extractedData.sleepHours ? (extractedData.sleepHours.includes('5') ? 4 : 7) : undefined,
+              notes: [
+                extractedData.sleepHours ? `Slept ${extractedData.sleepHours}` : null,
+                extractedData.hydrationGlasses ? `Drank ${extractedData.hydrationGlasses} glasses` : null,
+                'Via AI chat'
+              ].filter(Boolean).join('. '),
+              // Mark as resolved if they mentioned what helped in the same message
+              resolved: extractedData.interventions && extractedData.interventions.length > 0,
+              resolvedAt: extractedData.interventions && extractedData.interventions.length > 0 ? new Date() : undefined,
+            },
+          });
+          
+          console.log("✅ New HealthJournal entry:", { 
+            symptomName, 
+            trigger: extractedData.trigger,
+            resolved: extractedData.interventions && extractedData.interventions.length > 0
+          });
+          
+          // If they mentioned what helped in the same message, update with full story
+          if (extractedData.interventions && extractedData.interventions.length > 0) {
+            const created = await prisma.healthJournal.findFirst({
+              where: { userId, date: today, symptomName },
+            });
+            
+            if (created) {
+              await prisma.healthJournal.update({
+                where: { id: created.id },
+                data: {
+                  notes: `Symptom: ${symptomName} | Cause: ${extractedData.trigger || 'Unknown'} | Solution: ${extractedData.interventions.join(', ')}`,
+                },
+              });
+            }
+          }
+          
+        } else {
+          // EXISTING symptom - update with solution or trigger
+          const updates: any = {};
+          
+          // Add trigger if not already set
+          if (extractedData.trigger && !existing.triggers) {
+            updates.triggers = extractedData.trigger;
+          }
+          
+          // Add solution if mentioned
+          if (extractedData.interventions && extractedData.interventions.length > 0) {
+            const solution = extractedData.interventions.join(', ');
+            updates.resolved = true;
+            updates.resolvedAt = new Date();
+            
+            // Build comprehensive notes: Symptom → Cause → Solution
+            updates.notes = [
+              `Symptom: ${symptomName}`,
+              existing.triggers || extractedData.trigger ? `Cause: ${existing.triggers || extractedData.trigger}` : null,
+              `Solution: ${solution}`,
+              `Energy: ${extractedData.energyScore || existing.energyLevel || 'N/A'}/10`,
+              extractedData.sleepHours ? `Sleep: ${extractedData.sleepHours}` : null,
+            ].filter(Boolean).join(' | ');
+          }
+          
+          if (Object.keys(updates).length > 0) {
+            await prisma.healthJournal.update({
+              where: { id: existing.id },
+              data: updates,
+            });
+            
+            console.log("✅ Updated HealthJournal:", { 
+              symptomName, 
+              trigger: updates.triggers,
+              solution: extractedData.interventions,
+              resolved: updates.resolved
+            });
+          }
+        }
+      }
+    }
+    
+    // Log positive interventions even without symptoms (preventive care)
+    if (extractedData.interventions && extractedData.interventions.length > 0 && symptoms.length === 0) {
+      await prisma.healthJournal.create({
+        data: {
+          userId,
+          date: today,
+          symptomName: "Wellness Activity",
+          energyLevel: extractedData.energyScore,
+          notes: `Preventive/wellness activity: ${extractedData.interventions.join(', ')}. Via AI chat.`,
+          resolved: true,
+        },
+      });
+      
+      console.log("✅ Logged wellness activity:", extractedData.interventions);
+    }
   } catch (error) {
     console.error("Failed to save health data from chat:", error);
   }
