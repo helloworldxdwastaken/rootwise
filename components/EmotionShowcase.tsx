@@ -104,10 +104,10 @@ export function EmotionShowcase({
             mode="normal"
             src={asset.src}
             background="transparent"
-            style={{ width: "420px", height: "420px" }}
+            style={{ width: "320px", height: "320px" }}
           />
         ) : (
-          <div className="flex h-[420px] w-[420px] items-center justify-center text-sm text-slate-400">
+          <div className="flex h-[320px] w-[320px] items-center justify-center text-sm text-slate-400">
             Setting the vibe…
           </div>
         )}

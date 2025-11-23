@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")   // pooler 6543
-  directUrl = env("DIRECT_URL")     // direct 5432
+  // directUrl = env("DIRECT_URL")     // direct 5432 - temporarily disabled
 }
 
 model User {
@@ -19,6 +19,11 @@ model User {
   timezone          String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+  
+  // Onboarding tracking
+  onboardingCompleted   Boolean   @default(false)
+  onboardingCompletedAt DateTime?
+  onboardingProgress    Json?     // Track which steps are done
 
   profile        UserProfile?
   patientProfile PatientProfile?
@@ -28,6 +33,7 @@ model User {
   chatSessions   ChatSession[]
   chatMessages   ChatMessage[]
   userMemories   UserMemory[]
+  healthJournal  HealthJournal[]
 }
 
 model UserProfile {
@@ -114,9 +120,10 @@ model Condition {
   id          String            @id @default(cuid())
   userId      String
   name        String
-  category    ConditionCategory @default(SYMPTOM)
-  notes       String?
+  category    ConditionCategory @default(DIAGNOSIS)
+  notes       String?           @db.Text
   diagnosedAt DateTime?
+  diagnosedBy String?           // Doctor/Hospital name
   isActive    Boolean           @default(true)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -151,12 +158,18 @@ model ChatMessage {
   role      MessageRole
   content   String      @db.Text
   createdAt DateTime    @default(now())
+  
+  // Health data extraction
+  extractedHealthData   Json?    // Structured data extracted by AI
+  wasProcessedForHealth Boolean  @default(false)
 
-  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user    User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session       ChatSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthJournal HealthJournal[]
 
   @@index([sessionId])
   @@index([userId])
+  @@index([userId, wasProcessedForHealth])
 }
 
 model UserMemory {
@@ -183,11 +196,47 @@ enum Sex {
   UNKNOWN
 }
 
+model HealthJournal {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime // Date of symptom/feeling
+  
+  // Symptom details
+  symptomName String   // "Fatigue", "Headache", "Anxiety"
+  severity    Int?     // 1-10 scale
+  triggers    String?  @db.Text // "lot of work", "didn't sleep well"
+  duration    String?  // "all day", "2 hours", "morning only"
+  bodyPart    String?  // "head", "stomach", "back"
+  notes       String?  @db.Text
+  
+  // Context
+  moodScore      Int? // 1-10
+  energyLevel    Int? // 1-10
+  stressLevel    Int? // 1-10
+  sleepQuality   Int? // 1-10 (if mentioned that day)
+  
+  // Tracking
+  resolved       Boolean  @default(false)
+  resolvedAt     DateTime?
+  
+  // Links
+  sourceMessageId String?
+  sourceMessage   ChatMessage? @relation(fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, symptomName])
+  @@index([userId, date, symptomName])
+}
+
 enum ConditionCategory {
-  CHRONIC
-  ACUTE
-  SYMPTOM
-  DIAGNOSIS
+  CHRONIC    // Long-term conditions (diabetes, hypertension)
+  ACUTE      // Short-term conditions
+  SYMPTOM    // Temporary symptoms
+  DIAGNOSIS  // Formally diagnosed by healthcare provider
 }
 
 enum MessageRole {

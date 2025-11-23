@@ -1,145 +1,103 @@
-# Rootwise
+# 🌿 Rootwise
 
-**Rootwise** is a gentle, AI-assisted wellness companion that helps you explore natural support for your body through foods, herbs, and daily habits — always with safety notes and zero pharma.
+**AI-powered wellness companion with conversational onboarding and real-time health tracking.**
 
-## ✨ Features
+Rootwise helps you explore natural support for your body through foods, herbs, and daily habits — always with safety notes and zero pharma.
 
-- 🗣️ **Conversational Interface**: Natural language wellness conversations
-- 🧠 **AI-Powered Suggestions**: Evidence-informed nutrition and lifestyle guidance
-- 🛡️ **Safety-First Approach**: Every plan includes red-flag warnings and medical disclaimers
-- 🌿 **Holistic Support**: Foods, herbs, teas, and gentle daily habits
-- 🌐 **Multi-Language Ready**: Built for English, Spanish, Hebrew, and Russian speakers
-- 📱 **Modern UI**: Beautiful, responsive design with Tailwind CSS v4 and Framer Motion
-- 🔒 **Privacy-First**: Your data stays yours — never sold or shared
+## ⚡ Quick Features
+
+- 💬 **AI-Guided Onboarding** - Natural conversation replaces boring forms
+- 🤖 **Groq AI (Llama 3.1)** - Context-aware wellness assistant
+- 📊 **Real-Time Tracking** - Energy, sleep, hydration, symptoms
+- 🏥 **Medical History** - Conditions, medications, allergies
+- 🔐 **Privacy-First** - Your data stays yours, never sold
+- 🎨 **Beautiful UI** - Glassmorphism design, optimized performance
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Next.js 16 (App Router + Turbopack)
-- **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 4
-- **Animations**: Framer Motion
-- **Database**: PostgreSQL + Prisma ORM
-- **UI Components**: Custom components with Lucide icons
-- **Fonts**: Poppins (Google Fonts)
+- **Framework**: Next.js 16 + React 19 + TypeScript 5
+- **Database**: PostgreSQL (Supabase) + Prisma ORM 5.22
+- **AI**: Groq SDK (Llama 3.1 8B Instant)
+- **Auth**: NextAuth.js 4.24 with JWT
+- **Styling**: Tailwind CSS 4 + Framer Motion
+- **Icons**: Lucide React
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 20+ 
-- npm/yarn/pnpm
-- PostgreSQL database
-
-### Installation
-
-1. Clone the repository:
+## 🚀 Quick Start
 
 ```bash
-git clone <your-repo-url>
-cd rootwise
-```
-
-2. Install dependencies:
-
-```bash
+# 1. Install dependencies
 npm install
-```
 
-3. Set up your environment variables:
+# 2. Set up .env (see COMPLETE_SYSTEM_GUIDE.md for full config)
+DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="..."
+GROQ_API_KEY="gsk_..."
 
-Create a `.env` file in the root directory:
+# 3. Setup database
+npx prisma generate
+npx prisma db push
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/rootwise?schema=public"
-```
-
-4. Run database migrations:
-
-```bash
-npm run prisma:generate
-npm run prisma:migrate
-```
-
-5. Start the development server:
-
-```bash
+# 4. Start dev server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+Open [http://localhost:3000](http://localhost:3000)
 
-## 📁 Project Structure
+## 📚 **Complete Documentation**
 
-```
-rootwise/
-├── app/                      # Next.js app directory
-│   ├── page.tsx             # Home page
-│   ├── layout.tsx           # Root layout
-│   ├── globals.css          # Global styles
-│   ├── profile/             # User profile page
-│   ├── legal/               # Legal pages (terms, privacy, etc.)
-│   ├── why-trust-rootwise/  # Trust page
-│   ├── our-approach/        # Approach page
-│   └── how-rootwise-works/  # How it works page
-├── components/              # Reusable React components
-│   ├── Navbar.tsx
-│   ├── Footer.tsx
-│   ├── Hero.tsx
-│   ├── ConversationFlow.tsx
-│   ├── ProfileForm.tsx
-│   └── ...
-├── lib/                     # Utility functions
-│   ├── prisma.ts           # Prisma client singleton
-│   └── utils.ts            # Helper functions
-├── prisma/                 # Database schema
-│   └── schema.prisma
-└── public/                 # Static assets
+**👉 See [COMPLETE_SYSTEM_GUIDE.md](./COMPLETE_SYSTEM_GUIDE.md) for full system documentation**
 
-```
+This is your central source of truth for:
+- ✅ Architecture & data flow
+- ✅ Database schema & models
+- ✅ API endpoints & examples
+- ✅ AI integration guide
+- ✅ Onboarding system
+- ✅ Health tracking
+- ✅ Performance optimizations
+- ✅ Testing guide
 
-## 🗄️ Database Schema
+## 🗄️ Database Models
 
-The app uses Prisma with PostgreSQL. Key models:
+- **User** - Auth & profile
+- **PatientProfile** - Clinical data (age, sex, vitals)
+- **UserProfile** - Wellness preferences (diet, allergies)
+- **Condition** - Medical diagnoses (from doctors)
+- **HealthJournal** - Daily symptoms (from chat) ⏳ pending migration
+- **ChatSession** & **ChatMessage** - Conversation history
+- **UserMemory** - AI learned patterns & facts
 
-- **User**: User accounts
-- **UserProfile**: Health conditions, dietary preferences, languages
-- **Session**: Conversation sessions (issue/goal tracking)
+## 🎯 Key Features
 
-## 📜 Available Scripts
+### **AI-Guided Onboarding**
+New users have a natural conversation with AI (not boring forms!) to set up their profile.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+### **Overview Dashboard**
+Split-screen layout:
+- **Left**: Real-time health metrics (energy, sleep, hydration, symptoms)
+- **Right**: AI chat for instant wellness insights
+
+### **Smart Health Tracking**
+- Manual logging via quick buttons
+- **Auto-logging from chat** - AI extracts symptoms, energy, sleep from your messages
+- Daily reset with historical data
+- Pattern detection
+
+### **Full Patient Context**
+AI reads:
+- Medical conditions (diagnosed)
+- Current medications & allergies
+- Past symptom patterns
+- Today's metrics
+- Lifestyle notes
+
+## 📜 Scripts
+
+- `npm run dev` - Development server
+- `npm run build` - Production build
 - `npm run prisma:generate` - Generate Prisma client
-- `npm run prisma:migrate` - Run database migrations
-
-## 🎨 Key Design Principles
-
-1. **Gentle & Calming**: Soft gradients, smooth animations, welcoming tone
-2. **Safety-First**: Clear disclaimers, red-flag warnings, medical referrals
-3. **Evidence-Informed**: Grounded in research and traditional wisdom
-4. **Privacy-Focused**: Transparent data practices, user control
-5. **Accessible**: WCAG compliant, keyboard navigation, semantic HTML
-
-## 🌍 Multi-Language Support
-
-Currently supports:
-- English
-- Spanish (planned)
-- Hebrew (planned)
-- Russian (planned)
-
-## 📄 Legal Pages
-
-- `/legal/disclaimer` - Medical disclaimer
-- `/legal/terms` - Terms of use
-- `/legal/privacy` - Privacy policy
-- `/legal/cookies` - Cookie notice
-
-## 🤝 Contributing
-
-This is an early-access wellness platform. Contributions focused on safety, accessibility, and user experience are welcome.
+- `npx prisma db push` - Push schema to database
+- `npx prisma studio` - Visual database browser
 
 ## ⚠️ Important Disclaimer
 

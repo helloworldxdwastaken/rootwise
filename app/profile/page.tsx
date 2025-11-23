@@ -13,10 +13,10 @@ import { OverviewSection } from "@/components/dashboard/OverviewSection";
 import { HealthProfileSection } from "@/components/dashboard/HealthProfileSection";
 import { ConditionsSection } from "@/components/dashboard/ConditionsSection";
 import { MemoriesSection } from "@/components/dashboard/MemoriesSection";
-import { ChatHistorySection } from "@/components/dashboard/ChatHistorySection";
 import { Card } from "@/components/Card";
+import { ProfileProvider } from "@/contexts/ProfileContext";
 
-type Tab = "overview" | "health" | "conditions" | "memories" | "chat";
+type Tab = "overview" | "health" | "conditions" | "memories";
 
 export default function ProfilePage() {
   return (
@@ -48,7 +48,7 @@ function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = (searchParams.get("tab") as Tab | null) ?? null;
-  const tabs: Tab[] = ["overview", "health", "conditions", "memories", "chat"];
+  const tabs: Tab[] = ["overview", "health", "conditions", "memories"];
   const activeTab = useMemo<Tab | null>(
     () => (tabParam && tabs.includes(tabParam) ? tabParam : null),
     [tabParam]
@@ -109,8 +109,6 @@ function ProfilePageContent() {
         return <ConditionsSection />;
       case "memories":
         return <MemoriesSection />;
-      case "chat":
-        return <ChatHistorySection />;
       default:
         return (
           <Card className="bg-white/40 text-center py-10">
@@ -123,14 +121,16 @@ function ProfilePageContent() {
   };
 
   return (
-    <PageShell contentClassName="px-4">
-      <main className="flex flex-1 pb-16">
-        <SectionContainer className="w-full justify-center gap-8 pt-16">
-          <DashboardLayout>
-            <div className="py-8">{renderActiveSection()}</div>
-          </DashboardLayout>
-        </SectionContainer>
-      </main>
-    </PageShell>
+    <ProfileProvider>
+      <PageShell contentClassName="px-4">
+        <main className="flex flex-1 pb-16">
+          <SectionContainer className="w-full justify-center gap-8 pt-16">
+            <DashboardLayout>
+              <div className="py-8">{renderActiveSection()}</div>
+            </DashboardLayout>
+          </SectionContainer>
+        </main>
+      </PageShell>
+    </ProfileProvider>
   );
 }

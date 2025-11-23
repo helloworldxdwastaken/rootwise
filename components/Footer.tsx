@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { Leaf, Heart, Shield, Mail } from "lucide-react";
 import { SectionContainer } from "@/components/SectionContainer";
 
@@ -59,21 +58,11 @@ export function Footer() {
           >
         <div className="grid gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand Column */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="space-y-4 lg:col-span-2 order-1"
-          >
+          <div className="space-y-4 lg:col-span-2 order-1">
             <Link href="#home" className="flex items-center gap-2 text-lg font-semibold text-white group">
-              <motion.span
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 text-white"
-              >
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 text-white">
                 <Leaf className="h-6 w-6" />
-              </motion.span>
+              </span>
               Rootwise
             </Link>
             <p className="max-w-sm text-sm leading-6 text-white/90">
@@ -83,28 +72,21 @@ export function Footer() {
               {socialIcons.map((social) => {
                 const Icon = social.icon;
                 return (
-                  <motion.a
+                  <a
                     key={social.label}
                     href={social.href}
                     aria-label={social.label}
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white transition-colors hover:bg-white/30 backdrop-blur-sm"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white transition-all hover:bg-white/30 hover:scale-110 hover:-translate-y-0.5 backdrop-blur-sm"
                   >
                     <Icon className="h-5 w-5" />
-                  </motion.a>
+                  </a>
                 );
               })}
             </div>
-          </motion.div>
+          </div>
 
           {/* App Downloads - Show second on mobile */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="space-y-4 order-2 md:order-4"
-          >
+          <div className="space-y-4 order-2 md:order-4">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Get the app</h3>
             <div className="flex flex-col gap-3">
               <Link
@@ -122,16 +104,10 @@ export function Footer() {
                 <GooglePlayBadge />
               </Link>
             </div>
-          </motion.div>
+          </div>
 
           {/* Product Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="space-y-4 order-3"
-          >
+          <div className="space-y-4 order-3">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Product</h3>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
@@ -145,16 +121,10 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
           {/* Legal Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-4 order-4 md:order-3"
-          >
+          <div className="space-y-4 order-4 md:order-3">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">Legal & Trust</h3>
             <ul className="space-y-3">
               {[...footerLinks.legal, ...footerLinks.trust].map((link) => (
@@ -168,17 +138,11 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
         </div>
 
         {/* Trust Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="grid gap-4 sm:grid-cols-3 rounded-2xl border border-white/30 bg-white/10 backdrop-blur-xl p-6 mb-4 mt-8 md:mt-12"
-        >
+        <div className="grid gap-4 sm:grid-cols-3 rounded-2xl border border-white/30 bg-white/10 backdrop-blur-xl p-6 mb-4 mt-8 md:mt-12">
           <div className="flex items-start gap-3">
             <Shield className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
             <div>
@@ -200,16 +164,10 @@ export function Footer() {
               <p className="text-xs text-white/80">Rooted in science & tradition</p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="mt-10 border-t border-white/20 pt-6 text-center"
-        >
+        <div className="mt-10 border-t border-white/20 pt-6 text-center">
           <p className="mx-auto max-w-3xl text-[0.78rem] leading-relaxed text-white/90">
             <span className="mr-2 inline-block rounded-full bg-white/20 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-white">
               Important
@@ -219,7 +177,7 @@ export function Footer() {
           <p className="mt-2 text-xs text-white/70">
             © {new Date().getFullYear()} Rootwise. Made with care for your wellness journey.
           </p>
-        </motion.div>
+        </div>
         </div>
         </div>
       </SectionContainer>

@@ -21,7 +21,6 @@ const profileMenuLinks = [
   { label: "Health Profile", href: "/profile?tab=health" },
   { label: "Conditions", href: "/profile?tab=conditions" },
   { label: "Memories", href: "/profile?tab=memories" },
-  { label: "Chat History", href: "/profile?tab=chat" },
 ];
 
 export function Navbar() {
@@ -31,11 +30,29 @@ export function Navbar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   useEffect(() => {
+    let rafId: number | null = null;
+    let lastScrollY = window.scrollY;
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (rafId !== null) return;
+
+      rafId = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        if (Math.abs(currentScrollY - lastScrollY) > 10) {
+          setScrolled(currentScrollY > 20);
+          lastScrollY = currentScrollY;
+        }
+        rafId = null;
+      });
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   return (

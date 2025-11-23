@@ -48,12 +48,8 @@ export async function GET() {
     const sessions = await prisma.chatSession.findMany({
       where: { userId: user.id },
       orderBy: { startedAt: "desc" },
-      take: 50,
+      take: 20,
       include: {
-        messages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
         _count: {
           select: { messages: true },
         },

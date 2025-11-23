@@ -1,41 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
-import { User, Activity, MessageCircle, Clock } from "lucide-react";
-import { motion } from "framer-motion";
-
-type ProfileData = {
-  user: {
-    name?: string | null;
-    email: string;
-    preferredLanguage?: string | null;
-    timezone?: string | null;
-  };
-  conditions: Array<{ name: string; category: string; isActive: boolean }>;
-  memories: Array<{ key: string; value: unknown; importance: string }>;
-};
+import { User, Activity, MessageCircle } from "lucide-react";
+import { useProfile } from "@/contexts/ProfileContext";
 
 export function OverviewSection() {
-  const [data, setData] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const response = await fetch("/api/me/profile");
-        if (response.ok) {
-          const profileData = await response.json();
-          setData(profileData);
-        }
-      } catch (error) {
-        console.error("Failed to load overview:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+  const { data, loading } = useProfile();
 
   if (loading) {
     return (

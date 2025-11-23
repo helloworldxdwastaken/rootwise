@@ -26,10 +26,9 @@ export function PageShell({ children, className, contentClassName }: PageShellPr
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute -top-24 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#A6C7A3]/30 blur-3xl"
+          className="absolute -top-24 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#A6C7A3]/30 blur-2xl"
         />
         <motion.div
           animate={{
@@ -38,11 +37,10 @@ export function PageShell({ children, className, contentClassName }: PageShellPr
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
             delay: 1,
           }}
-          className="absolute left-8 top-32 h-64 w-64 rounded-full bg-[#174D3A]/10 blur-3xl"
+          className="absolute left-8 top-32 h-64 w-64 rounded-full bg-[#174D3A]/10 blur-2xl"
         />
         <motion.div
           animate={{
@@ -51,11 +49,10 @@ export function PageShell({ children, className, contentClassName }: PageShellPr
           }}
           transition={{
             duration: 12,
-            repeat: Infinity,
             ease: "easeInOut",
             delay: 2,
           }}
-          className="absolute bottom-0 right-0 h-[28rem] w-[28rem] translate-x-1/3 rounded-full bg-[#F4C977]/20 blur-3xl"
+          className="absolute bottom-0 right-0 h-[28rem] w-[28rem] translate-x-1/3 rounded-full bg-[#F4C977]/20 blur-2xl"
         />
       </div>
       

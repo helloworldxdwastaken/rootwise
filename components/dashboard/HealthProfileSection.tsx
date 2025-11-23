@@ -5,6 +5,7 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Save, AlertCircle, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProfile } from "@/contexts/ProfileContext";
 
 type HealthProfileFormData = {
   // User level
@@ -34,6 +35,7 @@ type HealthProfileFormData = {
 };
 
 export function HealthProfileSection() {
+  const { data: profileData, refetch } = useProfile();
   const [formData, setFormData] = useState<HealthProfileFormData>({
     name: "",
     preferredLanguage: "",
@@ -75,43 +77,33 @@ export function HealthProfileSection() {
   ];
 
   useEffect(() => {
-    async function loadProfile() {
-      try {
-        const response = await fetch("/api/me/profile");
-        if (response.ok) {
-          const data = await response.json();
-          setFormData({
-            name: data.user?.name || "",
-            preferredLanguage: data.user?.preferredLanguage || "",
-            timezone: data.user?.timezone || "",
-            dateOfBirth: data.patientProfile?.dateOfBirth?.split("T")[0] || "",
-            sex: data.patientProfile?.sex || "UNKNOWN",
-            heightCm: data.patientProfile?.heightCm?.toString() || "",
-            weightKg: data.patientProfile?.weightKg?.toString() || "",
-            lifestyleNotes: data.patientProfile?.lifestyleNotes || "",
-            hasDiabetes: data.profile?.hasDiabetes || false,
-            hasThyroidIssue: data.profile?.hasThyroidIssue || false,
-            hasHeartIssue: data.profile?.hasHeartIssue || false,
-            hasKidneyLiverIssue: data.profile?.hasKidneyLiverIssue || false,
-            isPregnantOrNursing: data.profile?.isPregnantOrNursing || false,
-            onBloodThinners: data.profile?.onBloodThinners || false,
-            vegetarian: data.profile?.vegetarian || false,
-            vegan: data.profile?.vegan || false,
-            lactoseFree: data.profile?.lactoseFree || false,
-            glutenFree: data.profile?.glutenFree || false,
-            nutAllergy: data.profile?.nutAllergy || false,
-            preferredLanguages: data.profile?.preferredLanguages || "",
-            otherNotes: data.profile?.otherNotes || "",
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load profile:", error);
-      } finally {
-        setLoading(false);
-      }
+    if (profileData) {
+      setFormData({
+        name: profileData.user?.name || "",
+        preferredLanguage: profileData.user?.preferredLanguage || "",
+        timezone: profileData.user?.timezone || "",
+        dateOfBirth: profileData.patientProfile?.dateOfBirth?.split("T")[0] || "",
+        sex: profileData.patientProfile?.sex || "UNKNOWN",
+        heightCm: profileData.patientProfile?.heightCm?.toString() || "",
+        weightKg: profileData.patientProfile?.weightKg?.toString() || "",
+        lifestyleNotes: profileData.patientProfile?.lifestyleNotes || "",
+        hasDiabetes: profileData.profile?.hasDiabetes || false,
+        hasThyroidIssue: profileData.profile?.hasThyroidIssue || false,
+        hasHeartIssue: profileData.profile?.hasHeartIssue || false,
+        hasKidneyLiverIssue: profileData.profile?.hasKidneyLiverIssue || false,
+        isPregnantOrNursing: profileData.profile?.isPregnantOrNursing || false,
+        onBloodThinners: profileData.profile?.onBloodThinners || false,
+        vegetarian: profileData.profile?.vegetarian || false,
+        vegan: profileData.profile?.vegan || false,
+        lactoseFree: profileData.profile?.lactoseFree || false,
+        glutenFree: profileData.profile?.glutenFree || false,
+        nutAllergy: profileData.profile?.nutAllergy || false,
+        preferredLanguages: profileData.profile?.preferredLanguages || "",
+        otherNotes: profileData.profile?.otherNotes || "",
+      });
+      setLoading(false);
     }
-    loadProfile();
-  }, []);
+  }, [profileData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +123,8 @@ export function HealthProfileSection() {
 
       if (response.ok) {
         setMessage({ type: "success", text: "Profile updated successfully!" });
+        // Refetch profile data to update shared context
+        await refetch();
       } else {
         setMessage({ type: "error", text: "Failed to update profile" });
       }

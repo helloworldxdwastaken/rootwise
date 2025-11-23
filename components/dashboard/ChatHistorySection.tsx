@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Send, MessageCircle, User, Sparkles, Plus, Trash2 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+
+// Lazy load ReactMarkdown for better initial load performance
+const ReactMarkdown = lazy(() => import("react-markdown"));
+const remarkGfm = lazy(() => import("remark-gfm").then(mod => ({ default: mod.default })));
 
 type ChatSession = {
   id: string;
@@ -40,9 +42,11 @@ export function ChatHistorySection() {
   const renderMessageContent = (message: ChatMessage) => {
     if (message.role === "ASSISTANT") {
       return (
-        <ReactMarkdown remarkPlugins={[remarkGfm]} className="markdown-message text-sm leading-relaxed">
-          {message.content}
-        </ReactMarkdown>
+        <Suspense fallback={<span className="text-sm text-slate-400">Loading...</span>}>
+          <ReactMarkdown className="markdown-message text-sm leading-relaxed">
+            {message.content}
+          </ReactMarkdown>
+        </Suspense>
       );
     }
 
@@ -50,7 +54,7 @@ export function ChatHistorySection() {
   };
 
   useEffect(() => {
-    loadSessions();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -58,6 +62,31 @@ export function ChatHistorySection() {
       loadMessages(selectedSession);
     }
   }, [selectedSession]);
+
+  async function loadInitialData() {
+    try {
+      const response = await fetch("/api/chat/session");
+      if (response.ok) {
+        const data = await response.json();
+        setSessions(data.sessions || []);
+        
+        // Load first session's messages in parallel
+        const firstSessionId = data.sessions && data.sessions.length > 0 
+          ? data.sessions[0].id 
+          : null;
+        
+        if (firstSessionId) {
+          setSelectedSession(firstSessionId);
+          // Fetch messages in parallel, don't wait
+          loadMessages(firstSessionId);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load sessions:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function loadSessions(preserveSelection: boolean = true) {
     try {

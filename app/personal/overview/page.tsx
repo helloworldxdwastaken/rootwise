@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Sparkles, Plus, Droplet, Moon, Battery } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/PageShell";
 import { Footer } from "@/components/Footer";
 import { EmotionShowcase } from "@/components/EmotionShowcase";
 import type { EmotionKey } from "@/components/EmotionShowcase";
+import { OverviewChat } from "@/components/OverviewChat";
 
 type StripCardProps = {
   title: string;
@@ -18,7 +20,7 @@ function StripCard({ title, children, className }: StripCardProps) {
   return (
     <article
       className={cn(
-        "rounded-2xl border border-white/50 bg-white/80 p-4 shadow-[0_18px_45px_rgba(15,40,34,0.08)] backdrop-blur",
+        "rounded-2xl border border-white/50 bg-white/80 p-4 shadow-[0_8px_24px_rgba(15,40,34,0.08)] backdrop-blur-sm",
         className
       )}
     >
@@ -29,49 +31,140 @@ function StripCard({ title, children, className }: StripCardProps) {
 }
 
 export default function PersonalOverviewPage() {
-  const [energyScore] = useState(6);
-  const [hydrationGlasses] = useState(5);
+  const { data: session } = useSession();
+  const [healthData, setHealthData] = useState<any>(null);
+  const [weeklyData, setWeeklyData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function loadHealthData() {
+      try {
+        // Load today's data
+        const todayResponse = await fetch("/api/health/today");
+        if (todayResponse.ok) {
+          const data = await todayResponse.json();
+          setHealthData(data);
+          
+          // Trigger AI symptom analysis if we have data
+          if (data.energyScore || data.sleepHours || data.hydrationGlasses > 0) {
+            analyzeSymptoms();
+          }
+        }
+
+        // Load weekly patterns
+        const weeklyResponse = await fetch("/api/health/weekly");
+        if (weeklyResponse.ok) {
+          const weekly = await weeklyResponse.json();
+          setWeeklyData(weekly);
+        }
+      } catch (error) {
+        console.error("Failed to load health data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadHealthData();
+  }, []);
+
+  const analyzeSymptoms = async () => {
+    try {
+      const response = await fetch("/api/health/analyze-symptoms", {
+        method: "POST",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setHealthData((prev: any) => ({
+          ...prev,
+          analyzedSymptoms: data.symptoms,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to analyze symptoms:", error);
+    }
+  };
+
+  const energyScore = healthData?.energyScore || null;
+  const hydrationGlasses = healthData?.hydrationGlasses || 0;
   const hydrationTarget = 6;
   const greeting = getGreeting();
-  const userName = "Enmanuel";
-  const emotionState = getEmotionState(energyScore);
-  const energyFill = getEnergyFill(energyScore);
-  const symptomGroups = [
+  const userName = session?.user?.name || "there";
+  const emotionState = getEmotionState(energyScore || 5);
+  const energyFill = getEnergyFill(energyScore || 5);
+  
+  // Use AI-analyzed symptoms
+  const analyzedSymptoms = healthData?.analyzedSymptoms || [];
+  
+  const symptomGroups = analyzedSymptoms.length > 0 ? [
     {
-      category: "Energy & mood",
-      entries: [
-        { icon: "😊", label: "Steady energy", trend: "Better today", trendColor: "text-emerald-600" },
-        { icon: "🙂", label: "Soft focus", trend: "Same as yesterday", trendColor: "text-slate-500" },
-      ],
+      category: "AI-Detected Patterns",
+      entries: analyzedSymptoms.map((symptom: any) => ({
+        icon: symptom.confidence === "high" ? "🔴" : symptom.confidence === "medium" ? "🟡" : "⚪",
+        label: symptom.name,
+        trend: symptom.confidence === "high" ? "Likely" : symptom.confidence === "medium" ? "Possible" : "Monitoring",
+        trendColor: symptom.confidence === "high" ? "text-rose-600" : symptom.confidence === "medium" ? "text-amber-600" : "text-slate-500",
+        reasoning: symptom.reasoning,
+      })),
     },
-    {
-      category: "Body cues",
-      entries: [
-        { icon: "💛", label: "Light muscle tension", trend: "Same", trendColor: "text-slate-500" },
-        { icon: "🟢", label: "Gentle appetite", trend: "Better", trendColor: "text-emerald-600" },
-      ],
-    },
-    {
-      category: "Calming wins",
-      entries: [
-        { icon: "🌿", label: "Calm breathing", trend: "Better", trendColor: "text-emerald-600" },
-      ],
-    },
-  ];
+  ] : [];
+
+  const handleQuickLog = async (type: string, value: any) => {
+    try {
+      await fetch("/api/health/today", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [type]: value }),
+      });
+      // Reload health data and re-analyze symptoms
+      await refreshHealthData();
+    } catch (error) {
+      console.error("Failed to log metric:", error);
+    }
+  };
+
+  const refreshHealthData = async () => {
+    try {
+      const response = await fetch("/api/health/today");
+      if (response.ok) {
+        const data = await response.json();
+        setHealthData(data);
+        
+        // Trigger symptom analysis
+        if (data.energyScore || data.sleepHours || data.hydrationGlasses > 0) {
+          analyzeSymptoms();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to refresh health data:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <PageShell className="bg-[#fdf8f3]">
+        <main className="flex flex-1 items-center justify-center">
+          <p className="text-slate-500">Loading your wellness data...</p>
+        </main>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell className="bg-[#fdf8f3]" contentClassName="px-0 pb-0">
-      <main className="relative flex flex-1 flex-col gap-6 overflow-hidden px-6 pt-16 pb-12">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-20 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/25 blur-[140px]" />
-          <div className="absolute bottom-0 left-8 h-64 w-64 rounded-full bg-[#F4C977]/30 blur-[160px]" />
-          <div className="absolute top-32 right-0 h-72 w-72 translate-x-1/3 rounded-full bg-[#cbd4ff]/30 blur-[180px]" />
-        </div>
-        <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-6">
-          <section className="relative overflow-hidden rounded-[36px] border border-white/40 bg-white/80 p-8 shadow-[0_40px_120px_rgba(15,40,34,0.2)] backdrop-blur">
+      {/* Full-screen background gradients */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -top-20 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-200/25 blur-[80px]" />
+        <div className="absolute bottom-0 left-8 h-64 w-64 rounded-full bg-[#F4C977]/30 blur-[90px]" />
+        <div className="absolute top-32 right-0 h-72 w-72 translate-x-1/3 rounded-full bg-[#cbd4ff]/30 blur-[100px]" />
+      </div>
+      
+      <main className="relative flex flex-1 flex-col gap-6 px-6 pt-16 pb-12 z-10">
+        <div className="relative mx-auto flex w-full max-w-[1600px] gap-6">
+          {/* Left side - Overview Content */}
+          <div className="flex flex-1 flex-col gap-6">
+          <section className="relative overflow-hidden rounded-[36px] border border-white/40 bg-white/80 p-8 shadow-[0_20px_60px_rgba(15,40,34,0.15)] backdrop-blur-sm">
             <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-emerald-100/60 blur-3xl" />
-              <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-amber-100/70 blur-3xl" />
+              <div className="absolute -left-10 top-0 h-40 w-40 rounded-full bg-emerald-100/60 blur-2xl" />
+              <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-amber-100/70 blur-2xl" />
             </div>
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-5">
@@ -82,51 +175,90 @@ export default function PersonalOverviewPage() {
                   <h1 className="mt-3 text-5xl font-semibold text-slate-900 leading-tight">
                     How your body is doing today
                   </h1>
-                  <p className="text-sm text-slate-500">Rootwise keeps it calm so you see what matters first.</p>
+                  <p className="text-sm text-slate-500">Track your wellness and chat with AI for insights.</p>
                 </div>
-                <div className="rounded-3xl border border-white/60 bg-white/80 p-5 shadow-inner">
-                  <div className="space-y-3">
-                    <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Energy</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-5xl leading-none">{energyFill.emoji}</span>
-                      <div className="flex-1">
-                        <div className="relative h-3 w-full rounded-full bg-slate-100">
-                          <div
-                            className="h-full rounded-full"
-                            style={{
-                              width: `${(energyScore / 10) * 100}%`,
-                              background: energyFill.gradient,
-                            }}
-                          />
-                          <span
-                            className={cn(
-                              "absolute -top-6 text-xs font-semibold transition-transform",
-                              energyFill.labelColor
-                            )}
-                            style={{ left: `calc(${(energyScore / 10) * 100}% - 16px)` }}
-                          >
-                            {energyFill.label}
-                          </span>
+
+                {/* Quick Log Buttons */}
+                {energyScore === null && (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        const score = prompt("How's your energy? (1-10)");
+                        if (score) handleQuickLog("energyScore", parseInt(score));
+                      }}
+                      className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition-all hover:bg-emerald-100"
+                    >
+                      <Battery className="h-4 w-4" />
+                      Log Energy
+                    </button>
+                    <button
+                      onClick={() => {
+                        const hours = prompt("Hours slept last night? (e.g. 7.5)");
+                        if (hours) handleQuickLog("sleepHours", hours);
+                      }}
+                      className="flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-all hover:bg-blue-100"
+                    >
+                      <Moon className="h-4 w-4" />
+                      Log Sleep
+                    </button>
+                  </div>
+                )}
+
+                {energyScore !== null ? (
+                  <div className="rounded-3xl border border-white/60 bg-white/80 p-5 shadow-inner">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Energy</span>
+                        <button
+                          onClick={() => {
+                            const score = prompt("Update energy? (1-10)", energyScore?.toString());
+                            if (score) handleQuickLog("energyScore", parseInt(score));
+                          }}
+                          className="text-xs text-emerald-600 hover:underline"
+                        >
+                          Update
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-5xl leading-none">{energyFill.emoji}</span>
+                        <div className="flex-1">
+                          <div className="relative h-3 w-full rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${(energyScore / 10) * 100}%`,
+                                background: energyFill.gradient,
+                              }}
+                            />
+                            <span
+                              className={cn(
+                                "absolute -top-6 text-xs font-semibold transition-transform",
+                                energyFill.labelColor
+                              )}
+                              style={{ left: `calc(${(energyScore / 10) * 100}% - 16px)` }}
+                            >
+                              {energyFill.label}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-xl font-semibold text-slate-900">{energyScore} / 10</p>
                         </div>
-                        <p className="mt-3 text-xl font-semibold text-slate-900">{energyScore} / 10</p>
                       </div>
                     </div>
-                  </div>
-                  <p className="mt-4 text-sm text-slate-500">Tip: keep the mini stretch + hydration pause every few hours to stay centered.</p>
-                </div>
-                <div className="mt-4 flex items-start gap-3 rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-sm text-slate-600 shadow-sm">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-200 via-rose-200 to-sky-200 text-[#174D3A]">
-                    <Sparkles className="h-4 w-4" />
-                  </span>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                      AI insight
-                    </p>
-                    <p className="mt-1 text-sm">
-                      Afternoon stretch breaks kept your energy balanced yesterday. Repeat the 5-minute pause today to stay in this calm groove.
+                    <p className="mt-4 text-sm text-slate-500">
+                      {energyScore >= 7
+                        ? "Great energy! Keep up the good habits."
+                        : energyScore >= 5
+                        ? "Moderate energy. Consider a quick walk or healthy snack."
+                        : "Low energy detected. Rest, hydrate, and check in with yourself."}
                     </p>
                   </div>
-                </div>
+                ) : (
+                  <div className="rounded-3xl border border-white/60 bg-white/80 p-5 shadow-inner text-center">
+                    <p className="text-sm text-slate-500">
+                      Start tracking by logging your energy level or chatting with the AI →
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="flex flex-1 flex-col items-center justify-center">
                 <EmotionShowcase
@@ -140,12 +272,39 @@ export default function PersonalOverviewPage() {
 
           <section className="grid gap-4 md:grid-cols-3">
             <StripCard title="Sleep" className="h-full">
-              <p className="text-lg font-semibold text-slate-900">7 hr 05 min</p>
-              <p className="text-xs text-slate-500">Lights out: 11:10 pm</p>
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[0.7rem] font-semibold text-emerald-600">
-                <span className="text-base">🌙</span>
-                Right on schedule — keep the same wind-down.
-              </p>
+              {healthData?.sleepHours ? (
+                <>
+                  <p className="text-lg font-semibold text-slate-900">{healthData.sleepHours}</p>
+                  <button
+                    onClick={() => {
+                      const hours = prompt("Update sleep hours?", healthData.sleepHours);
+                      if (hours) handleQuickLog("sleepHours", hours);
+                    }}
+                    className="mt-2 text-xs text-emerald-600 hover:underline"
+                  >
+                    Update
+                  </button>
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[0.7rem] font-semibold text-emerald-600">
+                    <span className="text-base">🌙</span>
+                    {parseFloat(healthData.sleepHours) >= 7 
+                      ? "Great sleep duration!"
+                      : "Consider getting more rest tonight"}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-500">Not tracked yet</p>
+                  <button
+                    onClick={() => {
+                      const hours = prompt("Hours slept last night? (e.g. 7.5)");
+                      if (hours) handleQuickLog("sleepHours", hours);
+                    }}
+                    className="mt-2 text-xs text-emerald-600 hover:underline"
+                  >
+                    Log sleep
+                  </button>
+                </>
+              )}
             </StripCard>
 
             <StripCard title="Hydration" className="h-full">
@@ -158,9 +317,13 @@ export default function PersonalOverviewPage() {
                     {Math.round((hydrationGlasses / hydrationTarget) * 100)}% to goal
                   </p>
                 </div>
-                <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-500">
-                  +1 glass = streak bonus
-                </span>
+                <button
+                  onClick={() => handleQuickLog("hydrationGlasses", hydrationGlasses + 1)}
+                  className="flex items-center gap-1 rounded-full bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-600 transition-all hover:bg-sky-100"
+                >
+                  <Droplet className="h-3 w-3" />
+                  +1
+                </button>
               </div>
               <div className="mt-4 flex flex-wrap gap-2.5">
                 {Array.from({ length: hydrationTarget }).map((_, idx) => (
@@ -171,96 +334,187 @@ export default function PersonalOverviewPage() {
                   />
                 ))}
               </div>
-              <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-[0.7rem] font-semibold text-sky-500">
-                <span className="text-base">💧</span>
-                Almost there — one more refill.
-              </p>
+              {hydrationGlasses < hydrationTarget && (
+                <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-[0.7rem] font-semibold text-sky-500">
+                  <span className="text-base">💧</span>
+                  {hydrationTarget - hydrationGlasses} more to reach your goal
+                </p>
+              )}
             </StripCard>
 
-            <StripCard title="Symptoms" className="h-full">
-              <div className="space-y-3 text-sm text-slate-700">
-                {symptomGroups.map((group) => (
-                  <div key={group.category}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                      {group.category}
-                    </p>
-                    <ul className="mt-2 space-y-2">
-                      {group.entries.map((entry) => (
-                        <li key={entry.label} className="flex items-center justify-between gap-3">
-                          <span className="flex items-center gap-2">
-                            <span className="text-base leading-none">{entry.icon}</span>
-                            {entry.label}
-                          </span>
-                          <span className={cn("text-xs font-semibold", entry.trendColor)}>
-                            {entry.trend}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+            <StripCard title="AI Health Insights" className="h-full">
+              {analyzedSymptoms.length > 0 ? (
+                <div className="space-y-3 text-sm text-slate-700">
+                  {symptomGroups.map((group) => (
+                    <div key={group.category}>
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                        {group.category}
+                      </p>
+                      <ul className="mt-2 space-y-3">
+                        {group.entries.map((entry: any, idx: number) => (
+                          <li key={idx} className="space-y-1">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="flex items-center gap-2">
+                                <span className="text-base leading-none">{entry.icon}</span>
+                                <span className="font-medium">{entry.label}</span>
+                              </span>
+                              <span className={cn("text-xs font-semibold", entry.trendColor)}>
+                                {entry.trend}
+                              </span>
+                            </div>
+                            {entry.reasoning && (
+                              <p className="text-xs text-slate-500 pl-6">
+                                {entry.reasoning}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-slate-500">
+                    {energyScore || healthData?.sleepHours || hydrationGlasses > 0
+                      ? "AI is analyzing your health data..."
+                      : "Log your energy, sleep, or chat with AI to get personalized health insights."}
+                  </p>
+                  {(energyScore || healthData?.sleepHours || hydrationGlasses > 0) && (
+                    <button
+                      onClick={analyzeSymptoms}
+                      className="text-xs text-emerald-600 hover:underline"
+                    >
+                      Analyze now
+                    </button>
+                  )}
+                </div>
+              )}
             </StripCard>
           </section>
 
           <StripCard title="Weekly patterns">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-              <div className="space-y-4 lg:w-2/5">
-                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
-                    Low energy midweek
-                  </span>
-                  <span>Most stable days: Monday & Friday</span>
-                </div>
-                <div className="rounded-2xl border border-white/60 bg-white/70 p-4 text-sm text-slate-700 shadow-inner">
-                  <div className="mb-2 flex items-center gap-2 font-semibold">
-                    <ChartIcon />
-                    <span>Average week · 6 entries</span>
+            {weeklyData && weeklyData.dataPoints > 0 ? (
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+                <div className="space-y-4 lg:w-2/5">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                    {weeklyData.patterns.length > 0 ? (
+                      weeklyData.patterns.map((pattern: any, idx: number) => (
+                        <span key={idx} className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+                          {pattern.description}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-slate-500">No clear patterns yet</span>
+                    )}
                   </div>
-                  <p className="text-xs text-slate-500">Energy dips after Wednesday workouts.</p>
+                  {weeklyData.bestDay && weeklyData.worstDay && (
+                    <div className="space-y-2 text-sm text-slate-600">
+                      <span>Best: {weeklyData.bestDay.day} ({weeklyData.bestDay.energy}/10)</span>
+                      <br />
+                      <span>Lowest: {weeklyData.worstDay.day} ({weeklyData.worstDay.energy}/10)</span>
+                    </div>
+                  )}
+                  <div className="rounded-2xl border border-white/60 bg-white/70 p-4 text-sm text-slate-700 shadow-inner">
+                    <div className="mb-2 flex items-center gap-2 font-semibold">
+                      <ChartIcon />
+                      <span>This week · {weeklyData.dataPoints} entries</span>
+                    </div>
+                    {weeklyData.avgEnergy && (
+                      <p className="text-xs text-slate-500">
+                        Average energy: {weeklyData.avgEnergy}/10
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="lg:w-3/5 w-full rounded-3xl border border-white/60 bg-white/80 p-4 shadow-inner">
+                  <WeeklyChart data={weeklyData.weekData} />
                 </div>
               </div>
-              <div className="lg:w-3/5 w-full rounded-3xl border border-white/60 bg-white/80 p-4 shadow-inner">
-                <WeeklyChart />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-sm text-slate-500">
+                  Track your energy daily to see patterns emerge over the week.
+                </p>
+                <p className="text-xs text-slate-400 mt-2">
+                  You have {weeklyData?.dataPoints || 0} days logged so far.
+                </p>
               </div>
-            </div>
+            )}
           </StripCard>
 
-          <section className="grid gap-4 md:grid-cols-2">
-            <StripCard title="What affected you today">
-              <ul className="mt-3 space-y-2 text-sm font-medium text-slate-800">
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-amber-400" />
-                  Heavier meal
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-yellow-300" />
-                  Low sleep <span className="font-normal text-slate-500">5 h 50 min</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-sky-400" />
-                  Stress
-                </li>
-              </ul>
-            </StripCard>
-            <StripCard title="Based on this, try tomorrow">
-              <ul className="mt-3 space-y-2 text-sm font-medium text-slate-800">
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-amber-400" />
-                  Light movement
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-yellow-300" />
-                  <span className="font-semibold">Protein</span>-rich breakfast
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-sky-400" />
-                  Early bedtime{" "}
-                  <span className="font-normal text-slate-500">(no screens)</span>
-                </li>
-              </ul>
-            </StripCard>
-          </section>
+          {analyzedSymptoms.length > 0 && (
+            <section className="grid gap-4 md:grid-cols-2">
+              <StripCard title="What may be affecting you">
+                <ul className="mt-3 space-y-2 text-sm font-medium text-slate-800">
+                  {energyScore !== null && energyScore < 6 && (
+                    <li className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-rose-400" />
+                      Low energy <span className="font-normal text-slate-500">{energyScore}/10</span>
+                    </li>
+                  )}
+                  {healthData?.sleepHours && parseFloat(healthData.sleepHours) < 7 && (
+                    <li className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-yellow-300" />
+                      Insufficient sleep <span className="font-normal text-slate-500">{healthData.sleepHours}</span>
+                    </li>
+                  )}
+                  {hydrationGlasses < 4 && (
+                    <li className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-sky-400" />
+                      Under-hydrated <span className="font-normal text-slate-500">{hydrationGlasses}/6 glasses</span>
+                    </li>
+                  )}
+                  {analyzedSymptoms.filter((s: any) => s.confidence === "high").length === 0 && (
+                    <li className="flex items-center gap-2 text-emerald-600">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      No major concerns detected
+                    </li>
+                  )}
+                </ul>
+              </StripCard>
+              <StripCard title="AI recommendations">
+                <ul className="mt-3 space-y-2 text-sm font-medium text-slate-800">
+                  {energyScore !== null && energyScore < 6 && (
+                    <li className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      Light movement & fresh air
+                    </li>
+                  )}
+                  {healthData?.sleepHours && parseFloat(healthData.sleepHours) < 7 && (
+                    <li className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-blue-400" />
+                      Early bedtime <span className="font-normal text-slate-500">(aim for 7-8hr)</span>
+                    </li>
+                  )}
+                  {hydrationGlasses < 4 && (
+                    <li className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-sky-400" />
+                      Increase water intake
+                    </li>
+                  )}
+                  <li className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-amber-400" />
+                    Chat with AI for personalized tips →
+                  </li>
+                </ul>
+              </StripCard>
+            </section>
+          )}
+          </div>
+          
+          {/* Right side - Chat */}
+          <div className="hidden lg:block w-[420px] flex-shrink-0">
+            <div className="sticky top-24 h-[calc(100vh-120px)]">
+              <OverviewChat 
+                energyScore={energyScore}
+                sleepHours={healthData?.sleepHours || null}
+                hydrationGlasses={hydrationGlasses}
+                symptoms={analyzedSymptoms.map((s: any) => s.name)}
+                onDataUpdated={refreshHealthData}
+              />
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
@@ -320,31 +574,77 @@ function ChartIcon() {
   );
 }
 
-function WeeklyChart() {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function WeeklyChart({ data }: { data?: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-32 items-center justify-center text-sm text-slate-400">
+        No data to display yet
+      </div>
+    );
+  }
+
+  // Calculate path from actual data
+  const maxEnergy = 10;
+  const chartHeight = 80;
+  const chartWidth = 200;
+  const pointSpacing = chartWidth / (data.length - 1 || 1);
+
+  // Generate path from energy scores
+  const pathPoints = data.map((day, idx) => {
+    const x = idx * pointSpacing;
+    const energy = day.energyScore || 5; // Default to 5 if no data
+    const y = chartHeight - (energy / maxEnergy) * (chartHeight - 20); // 20px padding at top
+    return { x, y, energy };
+  });
+
+  // Create smooth curve path
+  const pathD = pathPoints.map((point, idx) => {
+    if (idx === 0) return `M${point.x} ${point.y}`;
+    const prevPoint = pathPoints[idx - 1];
+    const cpx = (prevPoint.x + point.x) / 2;
+    return `C ${cpx} ${prevPoint.y} ${cpx} ${point.y} ${point.x} ${point.y}`;
+  }).join(" ");
+
+  // Create fill path
+  const fillD = `${pathD} L${chartWidth} ${chartHeight} L0 ${chartHeight} Z`;
+
   return (
     <div className="w-full">
       <svg
-        viewBox="0 0 200 80"
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
         preserveAspectRatio="none"
         className="h-32 w-full text-slate-300"
       >
+        {/* Line */}
         <path
-          d="M0 65 C 20 60 30 45 45 42 C 65 37 80 60 95 58 C 112 56 125 43 140 46 C 150 48 155 52 200 50"
+          d={pathD}
           stroke="#90b4b2"
           strokeWidth="4"
           fill="none"
           strokeLinecap="round"
         />
+        {/* Fill */}
         <path
-          d="M0 70 C 20 60 30 45 45 42 C 65 37 80 60 95 58 C 112 56 125 43 140 46 C 150 48 155 52 200 50 L200 80 L0 80 Z"
+          d={fillD}
           fill="#dcefee"
           fillOpacity="0.7"
         />
+        {/* Data points */}
+        {pathPoints.map((point, idx) => (
+          <circle
+            key={idx}
+            cx={point.x}
+            cy={point.y}
+            r="3"
+            fill={point.energy >= 7 ? "#34d399" : point.energy >= 5 ? "#90b4b2" : "#f87171"}
+          />
+        ))}
       </svg>
       <div className="mt-3 flex justify-between text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-400">
-        {days.map((day) => (
-          <span key={day}>{day}</span>
+        {data.map((day) => (
+          <span key={day.date} className={cn(day.energyScore ? "text-slate-600" : "text-slate-300")}>
+            {day.dayName}
+          </span>
         ))}
       </div>
     </div>
