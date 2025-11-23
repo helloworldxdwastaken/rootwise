@@ -124,14 +124,17 @@ export async function POST(request: Request) {
     });
 
     // Build conversation history for AI
-    const conversationHistory = onboardingSession.messages.map((m) => ({
-      role: m.role === "USER" ? "user" : "assistant",
+    const conversationHistory: Array<{
+      role: "user" | "assistant";
+      content: string;
+    }> = onboardingSession.messages.map((m) => ({
+      role: m.role === "USER" ? ("user" as const) : ("assistant" as const),
       content: m.content,
     }));
 
     // Add current message
     conversationHistory.push({
-      role: "user",
+      role: "user" as const,
       content: message,
     });
 
@@ -142,7 +145,7 @@ export async function POST(request: Request) {
       model,
       messages: [
         {
-          role: "system",
+          role: "system" as const,
           content: ONBOARDING_SYSTEM_PROMPT,
         },
         ...conversationHistory,
