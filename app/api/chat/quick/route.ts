@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
+import { getLocalDate, getMidnightInLocalTimezone } from "@/lib/timezone";
 
 // Helper to extract health info from natural language
 function extractHealthInfo(userMessage: string, aiResponse: string): any {
@@ -130,10 +131,7 @@ function extractHealthInfo(userMessage: string, aiResponse: string): any {
 // Save extracted health data
 async function saveHealthData(userId: string, extractedData: any) {
   try {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    // Use LOCAL date, not UTC!
-    const todayKey = `health_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { dateKey: todayKey, dateString, year, month, day } = getLocalDate();
 
     // Get existing data for today (from UserMemory - quick access)
     const existing = await prisma.userMemory.findUnique({
@@ -186,12 +184,14 @@ async function saveHealthData(userId: string, extractedData: any) {
 
     // ALSO save to HealthJournal (permanent tracking) - one entry per symptom
     if (symptoms.length > 0) {
+      const todayDate = getMidnightInLocalTimezone(dateString);
+      
       for (const symptomName of symptoms) {
         // Check if this symptom is already logged today
         const existing = await prisma.healthJournal.findFirst({
           where: {
             userId,
-            date: today,
+            date: todayDate,
             symptomName,
           },
         });
@@ -201,7 +201,7 @@ async function saveHealthData(userId: string, extractedData: any) {
           await prisma.healthJournal.create({
             data: {
               userId,
-              date: today,
+              date: todayDate,
               symptomName,
               severity: extractedData.energyScore ? (11 - extractedData.energyScore) : undefined,
               triggers: extractedData.trigger || null, // What caused it
@@ -227,7 +227,7 @@ async function saveHealthData(userId: string, extractedData: any) {
           // If they mentioned what helped in the same message, update with full story
           if (extractedData.interventions && extractedData.interventions.length > 0) {
             const created = await prisma.healthJournal.findFirst({
-              where: { userId, date: today, symptomName },
+              where: { userId, date: todayDate, symptomName },
             });
             
             if (created) {

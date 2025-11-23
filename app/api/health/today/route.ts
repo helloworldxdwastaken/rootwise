@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
+import { getLocalDate } from "@/lib/timezone";
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    // Use LOCAL date, not UTC (fixes timezone bug)
-    const todayKey = `health_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { dateKey: todayKey, dateString } = getLocalDate();
 
     const todayMetrics = await prisma.userMemory.findUnique({
       where: {
@@ -59,10 +56,7 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
     const body = await request.json();
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    // Use LOCAL date, not UTC (fixes timezone bug)
-    const todayKey = `health_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { dateKey: todayKey, dateString } = getLocalDate();
 
     const {
       energyScore,

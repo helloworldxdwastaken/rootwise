@@ -1,28 +1,18 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
+import { getDateRange } from "@/lib/timezone";
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    // OPTIMIZATION: Generate all date keys and fetch in ONE query
-    const dateKeys = [];
-    const dateMap = new Map<string, { date: string; dayName: string }>();
     
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      // Use LOCAL date, not UTC (fixes timezone bug)
-      const dateKey = `health_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      dateKeys.push(dateKey);
-      dateMap.set(dateKey, {
-        date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
-        dayName: date.toLocaleDateString("en-US", { weekday: "short" }),
-      });
-    }
+    // Get the past 7 days in Israel timezone
+    const dateRange = getDateRange(7);
+    const dateKeys = dateRange.map(d => d.dateKey);
+    const dateMap = new Map(
+      dateRange.map(d => [d.dateKey, { date: d.dateString, dayName: d.dayName }])
+    );
 
     // Batch fetch all 7 days in a single query
     const weekMemories = await prisma.userMemory.findMany({

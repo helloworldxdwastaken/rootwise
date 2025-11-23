@@ -1,0 +1,408 @@
+{
+  "exportDate": "2025-11-23T15:53:02.008Z",
+  "sourceRegion": "ap-southeast-2 (Sydney)",
+  "users": [
+    {
+      "id": "cmi65s19y0000glzqa09x8nus",
+      "email": "info.dronx@gmail.com",
+      "password": "$2b$12$MF5yHMErjZYJu.in2eZkfOx90Txcg3GBZE2X9yBcMXD6AYYCGjubW",
+      "name": "Enmanuel",
+      "emailVerified": null,
+      "image": null,
+      "preferredLanguage": "en",
+      "timezone": "",
+      "createdAt": "2025-11-19T15:29:55.318Z",
+      "updatedAt": "2025-11-19T15:31:02.564Z",
+      "onboardingCompleted": false,
+      "onboardingCompletedAt": null,
+      "onboardingProgress": null,
+      "profile": {
+        "id": "cmi65tipv0004glzqlypm51j9",
+        "userId": "cmi65s19y0000glzqa09x8nus",
+        "hasDiabetes": false,
+        "hasThyroidIssue": false,
+        "hasHeartIssue": false,
+        "hasKidneyLiverIssue": false,
+        "isPregnantOrNursing": false,
+        "onBloodThinners": false,
+        "vegetarian": false,
+        "vegan": false,
+        "lactoseFree": false,
+        "glutenFree": false,
+        "nutAllergy": false,
+        "preferredLanguages": "",
+        "otherNotes": "",
+        "updatedAt": "2025-11-19T15:31:04.580Z",
+        "createdAt": "2025-11-19T15:31:04.580Z"
+      },
+      "patientProfile": {
+        "id": "cmi65thxy0002glzqey7cgzj5",
+        "userId": "cmi65s19y0000glzqa09x8nus",
+        "dateOfBirth": "1998-03-23T00:00:00.000Z",
+        "sex": "MALE",
+        "heightCm": 179,
+        "weightKg": 110,
+        "lifestyleNotes": "",
+        "createdAt": "2025-11-19T15:31:03.574Z",
+        "updatedAt": "2025-11-19T15:31:03.574Z"
+      },
+      "conditions": [],
+      "userMemories": [
+        {
+          "id": "cmibiqrh90001mowizccqsgbn",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "key": "health_2025-11-22",
+          "value": {
+            "sleepHours": "5",
+            "energyScore": 5,
+            "lastUpdated": "2025-11-23T13:47:44.404Z",
+            "lastAnalyzed": "2025-11-23T13:47:56.334Z",
+            "analyzedSymptoms": [
+              {
+                "name": "Fatigue",
+                "reasoning": "Energy score is 5/10 and sleep was only 5 hours",
+                "confidence": "high"
+              },
+              {
+                "name": "Dehydration Risk",
+                "reasoning": "Only 5 glasses of water by afternoon (usual hydration is unknown)",
+                "confidence": "low"
+              }
+            ],
+            "hydrationGlasses": 5
+          },
+          "importance": "MEDIUM",
+          "lastUsedAt": "2025-11-23T13:47:56.334Z",
+          "createdAt": "2025-11-23T09:31:41.850Z",
+          "updatedAt": "2025-11-23T13:47:56.335Z"
+        },
+        {
+          "id": "cmibvsrxg00016cijtlq9gcsk",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "key": "health_2025-11-23",
+          "value": {
+            "symptoms": [
+              "Headache",
+              "Ache"
+            ],
+            "sleepHours": "5",
+            "energyScore": 8,
+            "lastUpdated": "2025-11-23T15:44:47.133Z",
+            "lastAnalyzed": "2025-11-23T15:44:56.297Z",
+            "analyzedSymptoms": [
+              {
+                "name": "Fatigue",
+                "reasoning": "Energy score is 8/10, but sleep was only 5 hours",
+                "confidence": "low"
+              },
+              {
+                "name": "Dehydration Risk",
+                "reasoning": "Only 6 glasses of water, but this is above average",
+                "confidence": "low"
+              },
+              {
+                "name": "Headache",
+                "reasoning": "User reported a headache",
+                "confidence": "high"
+              },
+              {
+                "name": "Ache",
+                "reasoning": "User reported an ache",
+                "confidence": "high"
+              }
+            ],
+            "hydrationGlasses": 6
+          },
+          "importance": "MEDIUM",
+          "lastUsedAt": "2025-11-23T15:44:56.297Z",
+          "createdAt": "2025-11-23T15:37:10.755Z",
+          "updatedAt": "2025-11-23T15:44:56.298Z"
+        }
+      ],
+      "healthJournal": [
+        {
+          "id": "cmibvymid0001aj4v375xaj77",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "date": "2025-11-22T22:00:00.000Z",
+          "symptomName": "Fatigue",
+          "severity": 7,
+          "triggers": null,
+          "duration": null,
+          "bodyPart": null,
+          "notes": "Energy score is 5/10 and sleep was only 5 hours. Logged via AI chat on 2025-11-22",
+          "moodScore": null,
+          "energyLevel": 5,
+          "stressLevel": null,
+          "sleepQuality": 5,
+          "resolved": false,
+          "resolvedAt": null,
+          "sourceMessageId": null,
+          "createdAt": "2025-11-23T15:41:43.669Z",
+          "updatedAt": "2025-11-23T15:41:43.669Z"
+        },
+        {
+          "id": "cmibvyopr0003aj4vx7u6wpg9",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "date": "2025-11-22T22:00:00.000Z",
+          "symptomName": "Dehydration Risk",
+          "severity": 3,
+          "triggers": null,
+          "duration": null,
+          "bodyPart": null,
+          "notes": "Only 5 glasses of water by afternoon (usual hydration is unknown). Logged via AI chat on 2025-11-22",
+          "moodScore": null,
+          "energyLevel": 5,
+          "stressLevel": null,
+          "sleepQuality": 5,
+          "resolved": false,
+          "resolvedAt": null,
+          "sourceMessageId": null,
+          "createdAt": "2025-11-23T15:41:46.527Z",
+          "updatedAt": "2025-11-23T15:41:46.527Z"
+        }
+      ]
+    },
+    {
+      "id": "cmibg7ktu0000fbbszjvt7zfp",
+      "email": "dmitriybespalov607@gmail.com",
+      "password": "$2b$12$1avuWcbIiHPw7SrmH4yHL.vf.qJH8ife.4Ei716SkSUK2IaKl0Y6u",
+      "name": "Dima Bespalov",
+      "emailVerified": null,
+      "image": null,
+      "preferredLanguage": null,
+      "timezone": null,
+      "createdAt": "2025-11-23T08:20:47.538Z",
+      "updatedAt": "2025-11-23T08:20:47.538Z",
+      "onboardingCompleted": false,
+      "onboardingCompletedAt": null,
+      "onboardingProgress": null,
+      "profile": null,
+      "patientProfile": null,
+      "conditions": [],
+      "userMemories": [],
+      "healthJournal": []
+    }
+  ],
+  "chatSessions": [
+    {
+      "id": "cmi66zz7l00055kcly7nynwfx",
+      "userId": "cmi65s19y0000glzqa09x8nus",
+      "startedAt": "2025-11-19T16:04:05.505Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-19T16:04:05.505Z",
+      "updatedAt": "2025-11-19T16:04:05.505Z",
+      "messages": [
+        {
+          "id": "cmi6724p60001h3z5ps92lqfs",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "role": "USER",
+          "content": "Hi",
+          "createdAt": "2025-11-19T16:05:45.930Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi672bfc0003h3z5de1p39sz",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": null,
+          "role": "ASSISTANT",
+          "content": "I'm having trouble responding right now. Please try again or rephrase your question.",
+          "createdAt": "2025-11-19T16:05:54.649Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi6dztmt0001t71h807649ud",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "role": "USER",
+          "content": "HI",
+          "createdAt": "2025-11-19T19:19:55.587Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi6dzyoa0003t71hsz2hizae",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": null,
+          "role": "ASSISTANT",
+          "content": "It seems like we're starting fresh. I'm Rootwise, a compassionate wellness companion here to support you on your journey to well-being.\n\nHow are you feeling today? Are there any specific areas of your life you'd like to focus on, such as stress, sleep, or nutrition? \n\nRemember, this is educational information to discuss with your provider. If you're experiencing severe symptoms or concerns, please seek immediate medical care.\n\nAlso, some red flags to watch out for include:\n\n- Severe chest pain or difficulty breathing\n- Severe headache or confusion\n- Sudden numbness or weakness in the face, arm, or leg\n- Severe abdominal pain or vomiting blood\n\nIf you experience any of these, please don't hesitate to reach out for emergency care.\n\nHow can I support you today?",
+          "createdAt": "2025-11-19T19:20:02.122Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi6e0s390005t71hbc9fjrsy",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "role": "USER",
+          "content": "i have a headache for over a week and doesnt go away , what can it be?",
+          "createdAt": "2025-11-19T19:20:40.245Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi6e0xpq0007t71hva2lq2qv",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": null,
+          "role": "ASSISTANT",
+          "content": "I'm so sorry to hear that you're experiencing a persistent headache. A headache that lasts for over a week can be concerning, and it's essential to consult with a healthcare professional for proper evaluation and guidance.\n\nThat being said, there are several potential causes for a persistent headache. Some possible explanations include:\n\n- Tension headaches: These are the most common type of headache and can be caused by muscle tension in the neck and scalp.\n- Migraines: These can be caused by a variety of factors, including genetics, hormonal changes, and sensitivity to certain foods or environmental triggers.\n- Sinus pressure: If you have a sinus infection or allergies, it can cause sinus pressure and headaches.\n- Medication overuse: Taking pain medication too frequently or in high doses can lead to rebound headaches.\n- Dehydration: Not drinking enough water can cause headaches.\n- Sleep disorders: Poor sleep quality, insomnia, or sleep apnea can lead to headaches.\n- Nutritional deficiencies: Deficiencies in magnesium, vitamin B2, or other nutrients can contribute to headaches.\n\nResearch suggests that staying hydrated, practicing stress-reducing techniques, and maintaining a consistent sleep schedule may help alleviate headache symptoms.\n\nIn the meantime, you might explore some gentle relaxation techniques, such as deep breathing, meditation, or yoga, to help manage stress and alleviate headache symptoms.\n\nHowever, please consult with a healthcare professional to rule out any underlying conditions that may require medical attention.\n\nSome red flags to watch out for include:\n\n- Sudden, severe headache\n- Headache with fever, confusion, or stiff neck\n- Headache with weakness, numbness, or difficulty speaking\n- Headache that worsens over time or is accompanied by vomiting\n\nIf you experience any of these, please seek immediate medical care.\n\nThis is educational information to discuss with your provider.",
+          "createdAt": "2025-11-19T19:20:47.534Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi6e1vlb0009t71ht76tw5nu",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "role": "USER",
+          "content": "how can i solve it fast",
+          "createdAt": "2025-11-19T19:21:31.439Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi6e20qf000bt71hxyadtk0x",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": null,
+          "role": "ASSISTANT",
+          "content": "I can't advise you on how to solve your headache quickly. If you're experiencing a persistent headache, I recommend you consult with a healthcare professional for proper evaluation and guidance. \r\n\r\nHowever, I can offer some general suggestions that may help alleviate headache symptoms:\r\n\r\n1. **Stay hydrated**: Drink plenty of water to ensure you're not dehydrated. Aim for at least 8-10 glasses of water per day.\r\n2. **Rest**: Get plenty of rest and try to establish a consistent sleep schedule.\r\n3. **Cold or warm compresses**: Apply a cold or warm compress to your forehead, neck, or shoulders to help relax tense muscles.\r\n4. **Gentle exercise**: Engage in gentle exercises like yoga or stretching to help reduce stress and promote relaxation.\r\n5. **Herbal teas**: Try drinking herbal teas like feverfew, ginger, or peppermint, which may help alleviate headache symptoms.\r\n\r\nPlease note that these suggestions are not a substitute for medical advice. If your headache persists or worsens, please seek medical attention.\r\n\r\nSome red flags to watch out for include:\r\n\r\n- Sudden, severe headache\r\n- Headache with fever, confusion, or stiff neck\r\n- Headache with weakness, numbness, or difficulty speaking\r\n- Headache that worsens over time or is accompanied by vomiting\r\n\r\nIf you experience any of these, please seek immediate medical care.\r\n\r\nThis is educational information to discuss with your provider.",
+          "createdAt": "2025-11-19T19:21:38.103Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi7b4osb0001149igxfuc521",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": "cmi65s19y0000glzqa09x8nus",
+          "role": "USER",
+          "content": "hey how aree u ?",
+          "createdAt": "2025-11-20T10:47:29.913Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmi7b4u3a0003149ipmq8uud8",
+          "sessionId": "cmi66zz7l00055kcly7nynwfx",
+          "userId": null,
+          "role": "ASSISTANT",
+          "content": "I'm doing well, thank you for asking! As a compassionate wellness companion, I'm here to support and help you navigate your wellness journey.\n\nTo get back on track, I'd like to revisit your headache concern. You mentioned it's been going on for over a week, and I want to make sure you're taking care of yourself.\n\nHave you tried any of the suggestions I mentioned earlier, such as staying hydrated, resting, or using cold or warm compresses? \n\nAlso, please keep an eye out for any red flags, such as:\n\n- Sudden, severe headache\n- Headache with fever, confusion, or stiff neck\n- Headache with weakness, numbness, or difficulty speaking\n- Headache that worsens over time or is accompanied by vomiting\n\nIf you experience any of these, please seek immediate medical care.\n\nLet's work together to find a solution that suits your needs.",
+          "createdAt": "2025-11-20T10:47:36.791Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        }
+      ]
+    },
+    {
+      "id": "cmibg8oc40002fbbsuvbe3717",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:38.740Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:38.740Z",
+      "updatedAt": "2025-11-23T08:21:38.740Z",
+      "messages": []
+    },
+    {
+      "id": "cmibg8qqb0004fbbs3w2kxkk3",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:41.552Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:41.552Z",
+      "updatedAt": "2025-11-23T08:21:41.552Z",
+      "messages": []
+    },
+    {
+      "id": "cmibg8qut0006fbbsdwad1x89",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:41.639Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:41.639Z",
+      "updatedAt": "2025-11-23T08:21:41.639Z",
+      "messages": []
+    },
+    {
+      "id": "cmibg8qyn0008fbbsrr90g60f",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:41.845Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:41.845Z",
+      "updatedAt": "2025-11-23T08:21:41.845Z",
+      "messages": []
+    },
+    {
+      "id": "cmibg8ri0000afbbs9egnjdtu",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:42.006Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:42.006Z",
+      "updatedAt": "2025-11-23T08:21:42.006Z",
+      "messages": []
+    },
+    {
+      "id": "cmibg8rmm000cfbbspvmfpery",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:42.145Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:42.145Z",
+      "updatedAt": "2025-11-23T08:21:42.145Z",
+      "messages": []
+    },
+    {
+      "id": "cmibg8see000efbbsvofkjb9d",
+      "userId": "cmibg7ktu0000fbbszjvt7zfp",
+      "startedAt": "2025-11-23T08:21:43.458Z",
+      "endedAt": null,
+      "source": "web",
+      "metadata": {},
+      "createdAt": "2025-11-23T08:21:43.458Z",
+      "updatedAt": "2025-11-23T08:21:43.458Z",
+      "messages": [
+        {
+          "id": "cmibg93fb000gfbbs2uqti81x",
+          "sessionId": "cmibg8see000efbbsvofkjb9d",
+          "userId": "cmibg7ktu0000fbbszjvt7zfp",
+          "role": "USER",
+          "content": "type somethng\\",
+          "createdAt": "2025-11-23T08:21:58.295Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        },
+        {
+          "id": "cmibg970f000ifbbsgajpjuiu",
+          "sessionId": "cmibg8see000efbbsvofkjb9d",
+          "userId": null,
+          "role": "ASSISTANT",
+          "content": "It seems like you may have accidentally pressed the backslash key. Let's start fresh.\n\nI'm Rootwise, a compassionate wellness companion. How can I support you today? Are you looking for guidance on a specific wellness topic or would you like to explore some general tips for maintaining overall well-being?\n\n**Immediate Relief**\nIf you're experiencing discomfort or stress, consider taking a few deep breaths and focusing on the present moment. This simple technique can help calm the mind and reduce tension.\n\n**Nourishing Habits**\nRegular exercise, a balanced diet, and adequate sleep are essential for maintaining physical and mental well-being. You might explore incorporating activities like yoga, meditation, or walking into your daily routine.\n\n**Safety Notes**\nIf you're experiencing severe or persistent discomfort, please seek immediate medical attention. Additionally, be sure to consult with your healthcare provider before starting any new supplements or making significant changes to your lifestyle.\n\nThis is educational information to discuss with your provider.",
+          "createdAt": "2025-11-23T08:22:02.943Z",
+          "extractedHealthData": null,
+          "wasProcessedForHealth": false
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "users": 2,
+    "profiles": 1,
+    "patientProfiles": 1,
+    "conditions": 0,
+    "memories": 2,
+    "healthJournal": 2,
+    "chatSessions": 8,
+    "chatMessages": 12
+  }
+}
