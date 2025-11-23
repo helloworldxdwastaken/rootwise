@@ -20,7 +20,7 @@ export async function GET() {
     if (!todayMetrics) {
       // Return default values for new day
       return NextResponse.json({
-        date: today.toISOString(),
+        date: dateString,
         energyScore: null,
         sleepHours: null,
         hydrationGlasses: 0,
@@ -32,7 +32,7 @@ export async function GET() {
 
     const data = todayMetrics.value as any;
     return NextResponse.json({
-      date: today.toISOString(),
+      date: dateString,
       energyScore: data.energyScore || null,
       sleepHours: data.sleepHours || null,
       hydrationGlasses: data.hydrationGlasses || 0,
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      date: today.toISOString(),
+      date: dateString,
       ...updatedData,
     });
   } catch (error) {

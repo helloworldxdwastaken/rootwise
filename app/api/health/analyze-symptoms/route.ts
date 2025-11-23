@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
+import { getLocalDate } from "@/lib/timezone";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || "",
@@ -40,9 +41,7 @@ RULES:
 export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayKey = `health_${today.toISOString().split("T")[0]}`;
+    const { dateKey: todayKey, dateString } = getLocalDate();
 
     // Get today's metrics
     const todayMetrics = await prisma.userMemory.findUnique({
@@ -55,7 +54,7 @@ export async function POST(request: Request) {
     });
 
     // Get recent chat messages (last 24 hours)
-    const yesterday = new Date(today);
+    const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     
     const recentMessages = await prisma.chatMessage.findMany({
@@ -74,7 +73,7 @@ export async function POST(request: Request) {
     
     const contextData = {
       today: {
-        date: today.toISOString().split("T")[0],
+        date: dateString,
         energyScore: data.energyScore || null,
         sleepHours: data.sleepHours || null,
         hydrationGlasses: data.hydrationGlasses || 0,
