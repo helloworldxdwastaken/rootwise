@@ -28,7 +28,9 @@ function extractHealthInfo(userMessage: string, aiResponse: string): any {
     { pattern: /\b(?:doctor|physician|dr\.?)\s+(?:said|told|diagnosed|found|mentioned|confirmed)\s+(?:i\s+have\s+)?([a-z]+(?:megaly|itis|osis|opathy|emia|penia|trophy|plasia|oma))\b/i, name: "$1" },
     { pattern: /\b(?:diagnosed\s+with|have|has)\s+([a-z]+(?:megaly|itis|osis|opathy|emia|penia|trophy|plasia|oma))\b/i, name: "$1" },
     { pattern: /\b(?:doctor|physician)\s+(?:said|told)\s+(?:i\s+have\s+)?([a-z\s]+(?:syndrome|disease|disorder))\b/i, name: "$1" },
-    { pattern: /\b(?:diagnosed\s+with|have|has)\s+(anemia|diabetes|hypertension|tachycardia|hypothyroid|hyperthyroid|arthritis|asthma|copd|ibs|gerd|migraine)\b/i, name: "$1" },
+    { pattern: /\b(?:diagnosed\s+with|have|has|think\s+i\s+have)\s+(anemia|diabetes|hypertension|tachycardia|hypothyroid|hyperthyroid|arthritis|asthma|copd|ibs|gerd|migraine)\b/i, name: "$1" },
+    { pattern: /\b(?:diagnosed\s+with|have|has|think\s+i\s+have)\s+(fatty\s+liver|cirrhosis|hepatitis|kidney\s+disease|renal\s+failure|heart\s+disease|coronary\s+artery\s+disease)\b/i, name: "$1" },
+    { pattern: /\b(?:diagnosed\s+with|have|has|think\s+i\s+have)\s+(high\s+blood\s+pressure|high\s+cholesterol|insulin\s+resistance|metabolic\s+syndrome)\b/i, name: "$1" },
   ];
 
   for (const { pattern, name } of medicalConditionPatterns) {
