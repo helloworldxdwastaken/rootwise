@@ -23,8 +23,30 @@ function extractHealthInfo(userMessage: string, aiResponse: string): any {
     }
   }
 
+  // Extract medical conditions mentioned by doctor/diagnosis
+  const medicalConditionPatterns = [
+    { pattern: /\b(?:doctor|physician|dr\.?)\s+(?:said|told|diagnosed|found|mentioned|confirmed)\s+(?:i\s+have\s+)?([a-z]+(?:megaly|itis|osis|opathy|emia|penia|trophy|plasia|oma))\b/i, name: "$1" },
+    { pattern: /\b(?:diagnosed\s+with|have|has)\s+([a-z]+(?:megaly|itis|osis|opathy|emia|penia|trophy|plasia|oma))\b/i, name: "$1" },
+    { pattern: /\b(?:doctor|physician)\s+(?:said|told)\s+(?:i\s+have\s+)?([a-z\s]+(?:syndrome|disease|disorder))\b/i, name: "$1" },
+    { pattern: /\b(?:diagnosed\s+with|have|has)\s+(anemia|diabetes|hypertension|tachycardia|hypothyroid|hyperthyroid|arthritis|asthma|copd|ibs|gerd|migraine)\b/i, name: "$1" },
+  ];
+
+  for (const { pattern, name } of medicalConditionPatterns) {
+    const match = userMessage.match(pattern);
+    if (match) {
+      const conditionName = match[1] || name;
+      const formatted = conditionName.trim().split(/\s+/).map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+      foundSymptoms.push(formatted);
+    }
+  }
+
   if (foundSymptoms.length > 0) {
     extracted.symptoms = foundSymptoms;
+    extracted.medicalCondition = foundSymptoms.some(s => 
+      /megaly|itis|osis|opathy|emia|penia|trophy|plasia|oma|syndrome|disease|disorder/i.test(s)
+    );
   }
 
   // Extract energy mentions (e.g. "my energy is low", "feeling a 4 out of 10")
@@ -351,6 +373,31 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get or create a "quick chat" session for this user
+    let session = await prisma.chatSession.findFirst({
+      where: {
+        userId: user.id,
+        title: "Overview Quick Chat",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!session) {
+      session = await prisma.chatSession.create({
+        data: {
+          userId: user.id,
+          title: "Overview Quick Chat",
+        },
+      });
+    }
+
+    // Get recent conversation history (last 10 messages)
+    const recentMessages = await prisma.chatMessage.findMany({
+      where: { sessionId: session.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+
     // Fetch user's health context
     const userData = await prisma.user.findUnique({
       where: { id: user.id },
@@ -404,7 +451,15 @@ export async function POST(request: Request) {
       contextPrompt += `\n\n**Important Facts About User:**\n${userData.userMemories.map(m => `- ${m.key}: ${JSON.stringify(m.value)}`).join("\n")}`;
     }
 
-    // Call Groq AI
+    // Build conversation history for AI
+    const conversationHistory = recentMessages
+      .reverse()
+      .map((msg) => ({
+        role: msg.role === "USER" ? "user" as const : "assistant" as const,
+        content: msg.content || "",
+      }));
+
+    // Call Groq AI with conversation history
     const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
     
     const completion = await groq.chat.completions.create({
@@ -414,6 +469,7 @@ export async function POST(request: Request) {
           role: "system",
           content: SYSTEM_PROMPT + contextPrompt,
         },
+        ...conversationHistory,
         {
           role: "user",
           content: message,
@@ -430,10 +486,55 @@ export async function POST(request: Request) {
       throw new Error("AI returned empty response");
     }
 
+    // Save user message to history
+    await prisma.chatMessage.create({
+      data: {
+        sessionId: session.id,
+        userId: user.id,
+        role: "USER",
+        content: message,
+      },
+    });
+
+    // Save AI response to history
+    await prisma.chatMessage.create({
+      data: {
+        sessionId: session.id,
+        userId: null, // AI messages don't have userId
+        role: "ASSISTANT",
+        content: aiResponse,
+      },
+    });
+
     // Extract health data from conversation
     const extractedData = extractHealthInfo(message, aiResponse);
     if (extractedData) {
       await saveHealthData(user.id, extractedData);
+      
+      // If this is a medical condition, also add it to the user's conditions
+      if (extractedData.medicalCondition && extractedData.symptoms) {
+        for (const symptom of extractedData.symptoms) {
+          const existing = await prisma.condition.findFirst({
+            where: {
+              userId: user.id,
+              name: symptom,
+            },
+          });
+
+          if (!existing) {
+            await prisma.condition.create({
+              data: {
+                userId: user.id,
+                name: symptom,
+                category: "DIAGNOSIS",
+                notes: `Mentioned in chat: "${message.substring(0, 100)}..."`,
+                isActive: true,
+              },
+            });
+            console.log("✅ Added medical condition:", symptom);
+          }
+        }
+      }
       
       // Trigger symptom analysis after logging new health data
       try {

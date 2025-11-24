@@ -313,24 +313,71 @@ export default function PersonalOverviewPage() {
 
           <section className="grid gap-4 md:grid-cols-3">
             <StripCard title="Sleep" className="h-full">
-              {healthData?.sleepHours ? (
+              {weeklyData && weeklyData.weekData ? (
                 <>
-                  <p className="text-lg font-semibold text-slate-900">{healthData.sleepHours}</p>
-                  <button
-                    onClick={() => {
-                      const hours = prompt("Update sleep hours?", healthData.sleepHours);
-                      if (hours) handleQuickLog("sleepHours", hours);
-                    }}
-                    className="mt-2 text-xs text-emerald-600 hover:underline"
-                  >
-                    Update
-                  </button>
-                  <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[0.7rem] font-semibold text-emerald-600">
-                    <span className="text-base">🌙</span>
-                    {parseFloat(healthData.sleepHours) >= 7 
-                      ? "Great sleep duration!"
-                      : "Consider getting more rest tonight"}
-                  </p>
+                  {/* Today's sleep */}
+                  {healthData?.sleepHours ? (
+                    <div className="mb-3">
+                      <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Today</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-semibold text-slate-900">{healthData.sleepHours} hrs</p>
+                        <button
+                          onClick={() => {
+                            const hours = prompt("Update sleep hours?", healthData.sleepHours);
+                            if (hours) handleQuickLog("sleepHours", hours);
+                          }}
+                          className="text-xs text-emerald-600 hover:underline"
+                        >
+                          Update
+                        </button>
+                      </div>
+                      <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[0.7rem] font-semibold text-emerald-600">
+                        <span className="text-base">🌙</span>
+                        {parseFloat(healthData.sleepHours) >= 7 
+                          ? "Great sleep!"
+                          : "Try for more rest"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mb-3">
+                      <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Today</p>
+                      <p className="text-sm text-slate-500">Not logged yet</p>
+                      <button
+                        onClick={() => {
+                          const hours = prompt("Hours slept last night? (e.g. 7.5)");
+                          if (hours) handleQuickLog("sleepHours", hours);
+                        }}
+                        className="mt-1 text-xs text-emerald-600 hover:underline"
+                      >
+                        Log sleep
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Weekly sleep entries */}
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <p className="text-xs uppercase tracking-[0.25em] text-slate-400 mb-2">This Week</p>
+                    <div className="space-y-1.5">
+                      {weeklyData.weekData.filter((day: any) => day.sleepHours !== null).length > 0 ? (
+                        weeklyData.weekData.map((day: any, idx: number) => (
+                          day.sleepHours !== null && (
+                            <div key={idx} className="flex items-center justify-between text-xs">
+                              <span className="text-slate-600 font-medium">{day.dayName}</span>
+                              <span className={cn(
+                                "font-semibold",
+                                day.sleepHours >= 7 ? "text-emerald-600" : 
+                                day.sleepHours >= 6 ? "text-amber-600" : "text-rose-600"
+                              )}>
+                                {day.sleepHours} hrs
+                              </span>
+                            </div>
+                          )
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400">No sleep logged this week</p>
+                      )}
+                    </div>
+                  </div>
                 </>
               ) : (
                 <>
