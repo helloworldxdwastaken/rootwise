@@ -4,8 +4,8 @@
 
 This document explains everything built in Rootwise as if you're a new engineer joining the team.
 
-**Last Updated:** November 23, 2025  
-**Version:** 2.0  
+**Last Updated:** November 24, 2025  
+**Version:** 2.1  
 **Status:** ✅ Production-Ready
 
 **Platforms:**
@@ -3623,11 +3623,150 @@ Onboarding:      1 route   🆕 (onboarding/chat)
 
 ---
 
+## 12. **Latest Updates (November 24, 2025)** 🆕
+
+### **Chat Memory & Conversation Context**
+
+**Issue Fixed:** The quick chat on the overview page was stateless - the AI had no memory of previous messages in the same conversation.
+
+**Solution Implemented:**
+- ✅ Creates persistent "Overview Quick Chat" session per user
+- ✅ Loads last 10 messages for conversation context
+- ✅ Sends full conversation history to AI with each message
+- ✅ Saves all user and AI messages to database
+- ✅ AI now remembers what you discussed earlier
+
+**Technical Details:**
+```typescript
+// Before: Stateless (no memory)
+POST /api/chat/quick
+→ Only sends current message to AI
+→ No conversation history
+
+// After: Stateful (with memory)
+POST /api/chat/quick
+→ Finds or creates ChatSession with source="overview_quick_chat"
+→ Loads last 10 ChatMessages from session
+→ Sends conversation history + current message to AI
+→ Saves both user message and AI response to database
+```
+
+**Impact:**
+- User: "doctor said I have splenomegaly"
+- User: "how can I make it better?"
+- AI: **Now remembers splenomegaly from previous message** ✅
+- User: "I'm talking about the splenomegaly"
+- AI: **Has full context and responds appropriately** ✅
+
+### **Medical Condition Detection from Chat**
+
+**Issue Fixed:** Medical conditions mentioned in chat weren't being detected and saved to the patient's profile.
+
+**Solution Implemented:**
+- ✅ Pattern matching for medical terminology (-megaly, -itis, -osis, -opathy, etc.)
+- ✅ Detection of doctor-diagnosed conditions
+- ✅ Recognition of common organ conditions (fatty liver, cirrhosis, hepatitis, etc.)
+- ✅ Automatic saving to `Condition` table with DIAGNOSIS category
+- ✅ Distinction between symptoms (temporary) and conditions (chronic)
+
+**Detection Patterns:**
+```typescript
+// Medical suffixes
+"splenomegaly", "hepatitis", "gastritis", "cirrhosis", "anemia"
+
+// Common conditions
+"fatty liver", "diabetes", "hypertension", "tachycardia", "migraine"
+"kidney disease", "heart disease", "high blood pressure", "high cholesterol"
+
+// Trigger phrases
+"doctor said I have...", "diagnosed with...", "I think I have..."
+```
+
+**Example:**
+```typescript
+User: "hey i was in the doctor and they told me i have splinomegaly"
+
+Extracted:
+→ Symptom: "Splinomegaly" (added to symptoms)
+→ Medical condition: true
+→ Created Condition record:
+  {
+    name: "Splinomegaly",
+    category: "DIAGNOSIS",
+    notes: "Mentioned in chat: 'hey i was in the doctor...'"
+  }
+
+Result: ✅ Saved to patient's Active Conditions list
+```
+
+### **Weekly Sleep Panel Enhancement**
+
+**Issue Fixed:** Sleep panel only showed today's sleep hours instead of all weekly entries.
+
+**Solution Implemented:**
+- ✅ Displays today's sleep at the top with update button
+- ✅ Shows "This Week" section with all 7 days of sleep data
+- ✅ Color-coded sleep hours (green: 7+hrs, amber: 6-7hrs, red: <6hrs)
+- ✅ Displays day name + hours for each logged entry
+- ✅ Uses existing `weeklyData` that was already being fetched
+
+**Visual Structure:**
+```
+┌─────────────────────────────────────┐
+│ Sleep                               │
+├─────────────────────────────────────┤
+│ TODAY                               │
+│ 7.5 hrs                  [Update]   │
+│ 🌙 Great sleep!                     │
+├─────────────────────────────────────┤
+│ THIS WEEK                           │
+│ Sunday     8.0 hrs  ✅ (green)      │
+│ Saturday   7.5 hrs  ✅ (green)      │
+│ Friday     6.5 hrs  ⚠️  (amber)     │
+│ Thursday   5.0 hrs  ⛔ (red)        │
+│ Wednesday  7.0 hrs  ✅ (green)      │
+└─────────────────────────────────────┘
+```
+
+### **Files Modified:**
+
+1. **`app/api/chat/quick/route.ts`** - Major updates:
+   - Added conversation memory (ChatSession + ChatMessage storage)
+   - Enhanced medical condition detection patterns
+   - Automatic Condition table updates for diagnosed issues
+   - Full conversation history sent to AI
+
+2. **`app/personal/overview/page.tsx`** - Sleep panel:
+   - Added weekly sleep entries display
+   - Color-coded sleep duration indicators
+   - Separated today vs. historical data
+
+### **Database Updates:**
+
+**No schema changes needed** - Uses existing tables:
+- `ChatSession` (already has `source` field for "overview_quick_chat")
+- `ChatMessage` (already stores conversation history)
+- `Condition` (already has `category`, `notes`, `isActive`)
+- `UserMemory` (already stores daily health data including sleep)
+
+### **Testing:**
+
+All features tested and verified:
+- ✅ Chat memory persists across messages
+- ✅ Splenomegaly detected and saved
+- ✅ Fatty liver detection added and working
+- ✅ Weekly sleep data displays correctly
+- ✅ No TypeScript errors
+- ✅ No linter errors
+- ✅ Production build passes
+
+---
+
 **Welcome to Rootwise! 🌿**
 
 This system has been thoroughly built, tested, and documented. All features are operational and the codebase is production-ready. The only pending item is the database migration, which can be run after Supabase maintenance completes.
 
 **For questions or updates:** Refer to this guide as the single source of truth.
 
-**Last Verified:** November 23, 2025  
+**Last Verified:** November 24, 2025  
 **Documentation Accuracy:** ✓✓✓ Triple-checked
