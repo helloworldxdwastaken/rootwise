@@ -377,7 +377,8 @@ export async function POST(request: Request) {
     let session = await prisma.chatSession.findFirst({
       where: {
         userId: user.id,
-        title: "Overview Quick Chat",
+        source: "overview_quick_chat",
+        endedAt: null, // Only get active sessions
       },
       orderBy: { createdAt: "desc" },
     });
@@ -386,7 +387,7 @@ export async function POST(request: Request) {
       session = await prisma.chatSession.create({
         data: {
           userId: user.id,
-          title: "Overview Quick Chat",
+          source: "overview_quick_chat",
         },
       });
     }
