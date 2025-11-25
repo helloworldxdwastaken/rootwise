@@ -45,8 +45,21 @@ export async function POST(request: Request) {
                 {
                   text: `Analyze this food image and provide nutritional information.
 
-Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+IMPORTANT: If the image is:
+- Too blurry, dark, or unclear to identify food
+- Not showing food at all
+- Too cluttered to estimate portions
+
+Then return this JSON:
 {
+  "unclear": true,
+  "reason": "brief reason why (e.g., 'Image is too dark', 'Cannot identify food items', 'Multiple overlapping items')",
+  "suggestion": "helpful tip (e.g., 'Try taking the photo with flash or better lighting', 'Move closer to the food')"
+}
+
+Otherwise, return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+{
+  "unclear": false,
   "description": "Brief description of the food/meal",
   "items": ["item1", "item2"],
   "calories": estimated total calories as number,
@@ -55,7 +68,7 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no expla
   "fat": grams as number,
   "fiber": grams as number or null,
   "portionSize": "estimated portion description",
-  "confidence": confidence score 0-1,
+  "confidence": confidence score 0-1 (use lower scores like 0.3-0.5 if uncertain),
   "healthNotes": "brief health insight about this meal"
 }
 
@@ -112,6 +125,16 @@ Be realistic with calorie estimates based on typical portion sizes visible in th
         { error: "Failed to parse food analysis" },
         { status: 500 }
       );
+    }
+
+    // Check if image was unclear
+    if (analysis.unclear) {
+      return NextResponse.json({
+        success: false,
+        unclear: true,
+        reason: analysis.reason || "Could not identify food in image",
+        suggestion: analysis.suggestion || "Try taking the photo with better lighting",
+      });
     }
 
     return NextResponse.json({
