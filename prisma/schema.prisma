@@ -34,6 +34,7 @@ model User {
   chatMessages   ChatMessage[]
   userMemories   UserMemory[]
   healthJournal  HealthJournal[]
+  foodLogs       FoodLog[]
 }
 
 model UserProfile {
@@ -249,4 +250,41 @@ enum MemoryImportance {
   LOW
   MEDIUM
   HIGH
+}
+
+model FoodLog {
+  id          String   @id @default(cuid())
+  userId      String
+  
+  // Food details
+  imageUrl    String?  // Optional: store image URL if needed
+  description String   // "Grilled chicken with rice and vegetables"
+  calories    Int      // Estimated calories
+  protein     Float?   // grams
+  carbs       Float?   // grams
+  fat         Float?   // grams
+  fiber       Float?   // grams
+  
+  // Meal context
+  mealType    MealType @default(OTHER)
+  portionSize String?  // "1 plate", "medium bowl"
+  confidence  Float?   // AI confidence score 0-1
+  
+  // Timestamps
+  eatenAt     DateTime @default(now()) // When the food was eaten
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, eatenAt])
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+  OTHER
 }

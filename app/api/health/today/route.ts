@@ -27,6 +27,10 @@ export async function GET() {
         moodScore: null,
         symptoms: [],
         notes: null,
+        // Activity data from health apps
+        steps: null,
+        heartRate: null,
+        activeCalories: null,
       });
     }
 
@@ -39,6 +43,10 @@ export async function GET() {
       moodScore: data.moodScore || null,
       symptoms: data.symptoms || [],
       notes: data.notes || null,
+      // Activity data from health apps
+      steps: data.steps || null,
+      heartRate: data.heartRate || null,
+      activeCalories: data.activeCalories || null,
     });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
