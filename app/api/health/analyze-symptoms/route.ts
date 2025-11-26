@@ -99,7 +99,7 @@ export async function POST(request: Request) {
 
     // Get user profile for calorie goal calculation
     const patientProfile = await prisma.patientProfile.findUnique({
-      where: { clerkId: user.id },
+      where: { userId: user.id },
     });
 
     // Calculate BMR and TDEE if we have profile data
