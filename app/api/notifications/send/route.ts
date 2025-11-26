@@ -22,12 +22,22 @@ import {
 export async function POST(req: NextRequest) {
   try {
     // Try mobile auth first, then web auth
-    let user = await getMobileUser(req);
-    if (!user) {
-      user = await getCurrentUser().catch(() => null);
+    // We only need the user id, so extract it from either auth method
+    let userId: string | null = null;
+    
+    const mobileUser = await getMobileUser(req);
+    if (mobileUser) {
+      userId = mobileUser.id;
+    } else {
+      try {
+        const webUser = await getCurrentUser();
+        userId = webUser.id;
+      } catch {
+        // Not authenticated via web either
+      }
     }
     
-    if (!user) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -38,8 +48,8 @@ export async function POST(req: NextRequest) {
 
     // For now, users can only send to themselves
     // In the future, you could add admin check for targetUserId
-    const userId = targetUserId || user.id;
-    if (userId !== user.id) {
+    const targetId = targetUserId || userId;
+    if (targetId !== userId) {
       return NextResponse.json(
         { error: 'Cannot send notifications to other users' },
         { status: 403 }
@@ -52,7 +62,7 @@ export async function POST(req: NextRequest) {
     switch (type) {
       case 'test':
         success = await sendPushNotification({
-          userId,
+          userId: targetId,
           title: title || '🧪 Test Notification',
           body: body || 'Push notifications are working! You\'ll receive health insights here.',
           data: { test: true },
@@ -63,7 +73,7 @@ export async function POST(req: NextRequest) {
 
       case 'weekly_summary':
         success = await sendWeeklySummaryNotification(
-          userId,
+          targetId,
           body || 'Your energy averaged 7/10 this week. Sleep improved by 15%!'
         );
         message = success ? 'Weekly summary notification sent' : 'Failed to send';
@@ -71,7 +81,7 @@ export async function POST(req: NextRequest) {
 
       case 'pattern':
         success = await sendPatternDetectedNotification(
-          userId,
+          targetId,
           body || 'We noticed your energy drops on days with less than 6 hours of sleep.'
         );
         message = success ? 'Pattern notification sent' : 'Failed to send';
@@ -79,7 +89,7 @@ export async function POST(req: NextRequest) {
 
       case 'insight':
         success = await sendHealthInsightNotification(
-          userId,
+          targetId,
           body || 'Based on your recent data, try increasing water intake in the afternoon.'
         );
         message = success ? 'Health insight notification sent' : 'Failed to send';
