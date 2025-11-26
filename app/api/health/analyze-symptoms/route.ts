@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
 import { getLocalDate } from "@/lib/timezone";
+import { sendPatternDetectedNotification } from "@/lib/push-service";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || "",
@@ -218,6 +219,24 @@ Remember: Output ONLY valid JSON with symptoms array. If everything looks normal
           lastUsedAt: new Date(),
         },
       });
+    }
+
+    // Send push notification if high-confidence patterns detected
+    const highConfidenceSymptoms = symptoms.filter(
+      (s: { confidence: string }) => s.confidence === 'high'
+    );
+    
+    if (highConfidenceSymptoms.length > 0) {
+      const symptomNames = highConfidenceSymptoms
+        .slice(0, 2)
+        .map((s: { name: string }) => s.name)
+        .join(' and ');
+      
+      // Send notification asynchronously (don't wait for it)
+      sendPatternDetectedNotification(
+        user.id,
+        `AI detected ${symptomNames}. Tap to see insights and recommendations.`
+      ).catch(err => console.log('Push notification error:', err));
     }
 
     return NextResponse.json({
