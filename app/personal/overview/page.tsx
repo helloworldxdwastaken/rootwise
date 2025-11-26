@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Sparkles, Plus, Droplet, Moon, Battery, Loader2 } from "lucide-react";
+import { Sparkles, Plus, Droplet, Moon, Battery, Loader2, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/PageShell";
 import { Footer } from "@/components/Footer";
@@ -35,16 +35,18 @@ export default function PersonalOverviewPage() {
   const { data: session } = useSession();
   const [healthData, setHealthData] = useState<any>(null);
   const [weeklyData, setWeeklyData] = useState<any>(null);
+  const [foodData, setFoodData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [analyzingSymptoms, setAnalyzingSymptoms] = useState(false);
   
   useEffect(() => {
     async function loadHealthData() {
       try {
-        // OPTIMIZATION 1: Load both endpoints in parallel
-        const [todayResponse, weeklyResponse] = await Promise.all([
+        // OPTIMIZATION 1: Load all endpoints in parallel
+        const [todayResponse, weeklyResponse, foodResponse] = await Promise.all([
           fetch("/api/health/today"),
           fetch("/api/health/weekly"),
+          fetch("/api/food/log"),
         ]);
 
         // Process today's data
@@ -62,6 +64,12 @@ export default function PersonalOverviewPage() {
         if (weeklyResponse.ok) {
           const weekly = await weeklyResponse.json();
           setWeeklyData(weekly);
+        }
+
+        // Process food data
+        if (foodResponse.ok) {
+          const food = await foodResponse.json();
+          setFoodData(food);
         }
       } catch (error) {
         console.error("Failed to load health data:", error);
@@ -135,9 +143,10 @@ export default function PersonalOverviewPage() {
   const refreshHealthData = async () => {
     try {
       // OPTIMIZATION: Parallel refresh
-      const [todayResponse, weeklyResponse] = await Promise.all([
+      const [todayResponse, weeklyResponse, foodResponse] = await Promise.all([
         fetch("/api/health/today"),
         fetch("/api/health/weekly"),
+        fetch("/api/food/log"),
       ]);
       
       if (todayResponse.ok) {
@@ -153,6 +162,11 @@ export default function PersonalOverviewPage() {
       if (weeklyResponse.ok) {
         const weekly = await weeklyResponse.json();
         setWeeklyData(weekly);
+      }
+
+      if (foodResponse.ok) {
+        const food = await foodResponse.json();
+        setFoodData(food);
       }
     } catch (error) {
       console.error("Failed to refresh health data:", error);
@@ -310,6 +324,107 @@ export default function PersonalOverviewPage() {
               </div>
             </div>
           </section>
+
+          {/* Today's Nutrition Card */}
+          {foodData && (
+            <section className="mb-4">
+              <StripCard title="Today's Nutrition" className="h-full">
+                {foodData.logs && foodData.logs.length > 0 ? (
+                  <div className="space-y-4">
+                    {/* Totals Summary */}
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="text-center p-2 rounded-xl bg-gradient-to-b from-emerald-50 to-white border border-emerald-100">
+                        <p className="text-2xl font-bold text-emerald-600">{foodData.totals?.calories || 0}</p>
+                        <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">Calories</p>
+                      </div>
+                      <div className="text-center p-2 rounded-xl bg-gradient-to-b from-blue-50 to-white border border-blue-100">
+                        <p className="text-2xl font-bold text-blue-600">{Math.round(foodData.totals?.protein || 0)}g</p>
+                        <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">Protein</p>
+                      </div>
+                      <div className="text-center p-2 rounded-xl bg-gradient-to-b from-amber-50 to-white border border-amber-100">
+                        <p className="text-2xl font-bold text-amber-600">{Math.round(foodData.totals?.carbs || 0)}g</p>
+                        <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">Carbs</p>
+                      </div>
+                      <div className="text-center p-2 rounded-xl bg-gradient-to-b from-rose-50 to-white border border-rose-100">
+                        <p className="text-2xl font-bold text-rose-500">{Math.round(foodData.totals?.fat || 0)}g</p>
+                        <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">Fat</p>
+                      </div>
+                    </div>
+
+                    {/* Calorie Progress */}
+                    {healthData?.calorieGoal && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-500">Daily Goal Progress</span>
+                          <span className="font-semibold text-slate-700">
+                            {foodData.totals?.calories || 0} / {healthData.calorieGoal} kcal
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className={cn(
+                              "h-full rounded-full transition-all",
+                              (foodData.totals?.calories || 0) > healthData.calorieGoal
+                                ? "bg-rose-400"
+                                : "bg-gradient-to-r from-emerald-400 to-emerald-500"
+                            )}
+                            style={{ width: `${Math.min(100, ((foodData.totals?.calories || 0) / healthData.calorieGoal) * 100)}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          {(foodData.totals?.calories || 0) < healthData.calorieGoal 
+                            ? `${healthData.calorieGoal - (foodData.totals?.calories || 0)} kcal remaining`
+                            : `${(foodData.totals?.calories || 0) - healthData.calorieGoal} kcal over goal`}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Meals List */}
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Meals Today</p>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {foodData.logs.slice(0, 5).map((log: any) => (
+                          <div 
+                            key={log.id} 
+                            className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">
+                                {log.mealType === 'BREAKFAST' ? '🍳' : 
+                                 log.mealType === 'LUNCH' ? '🥗' : 
+                                 log.mealType === 'DINNER' ? '🍽️' : 
+                                 log.mealType === 'SNACK' ? '🍎' : '🍴'}
+                              </span>
+                              <div>
+                                <p className="text-sm font-medium text-slate-700 line-clamp-1">{log.description}</p>
+                                <p className="text-xs text-slate-400">
+                                  {new Date(log.eatenAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-sm font-semibold text-emerald-600">{log.calories} kcal</span>
+                          </div>
+                        ))}
+                        {foodData.logs.length > 5 && (
+                          <p className="text-xs text-center text-slate-400">
+                            +{foodData.logs.length - 5} more meals
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Utensils className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+                    <p className="text-sm text-slate-500">No meals logged today</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Use the mobile app to scan and log your food
+                    </p>
+                  </div>
+                )}
+              </StripCard>
+            </section>
+          )}
 
           <section className="grid gap-4 md:grid-cols-3">
             <StripCard title="Sleep" className="h-full">
@@ -613,6 +728,7 @@ export default function PersonalOverviewPage() {
                 sleepHours={healthData?.sleepHours || null}
                 hydrationGlasses={hydrationGlasses}
                 symptoms={analyzedSymptoms.map((s: any) => s.name)}
+                caloriesConsumed={foodData?.totals?.calories || 0}
                 onDataUpdated={refreshHealthData}
               />
             </div>

@@ -16,6 +16,7 @@ type OverviewChatProps = {
   sleepHours?: string | null;
   hydrationGlasses?: number;
   symptoms?: string[];
+  caloriesConsumed?: number;
   onDataUpdated?: () => void;
 };
 
@@ -24,6 +25,7 @@ export function OverviewChat({
   sleepHours = null,
   hydrationGlasses = 0,
   symptoms = [],
+  caloriesConsumed = 0,
   onDataUpdated
 }: OverviewChatProps) {
   // Generate personalized welcome message
@@ -86,6 +88,7 @@ export function OverviewChat({
             sleepHours,
             hydrationGlasses,
             symptoms,
+            caloriesConsumed,
           },
         }),
       });
