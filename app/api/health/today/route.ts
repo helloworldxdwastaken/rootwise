@@ -19,7 +19,7 @@ export async function GET() {
         },
       }),
       prisma.patientProfile.findUnique({
-        where: { clerkId: user.id },
+        where: { userId: user.id },
       }),
     ]);
 
