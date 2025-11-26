@@ -332,13 +332,35 @@ const groq = new Groq({
 
 const SYSTEM_PROMPT = `You are Rootwise, a compassionate wellness companion on the user's personal overview page.
 
-IMPORTANT: You have access to the user's profile including their name, age, conditions, and health data. Use this information to personalize your responses.
+IMPORTANT: You have access to the user's profile including their name, age, conditions, food intake, and health data. Use this information to personalize your responses.
 
 CONTEXT AWARENESS:
 - You REMEMBER the user's name (it's in your context data)
 - You know their health conditions and history
-- You track their daily metrics
+- You track their daily metrics AND food intake
 - You're part of their ongoing wellness journey, not a one-off chatbot
+- You can see what they ate today and their nutritional intake
+
+WHEN USER REPORTS SYMPTOMS (headache, pain, fatigue, etc.):
+1. ALWAYS ask follow-up questions to understand better:
+   - "How long have you been experiencing this?"
+   - "On a scale of 1-10, how severe is it?"
+   - "Did anything trigger it? (stress, food, lack of sleep, etc.)"
+   - "Have you tried anything that helped?"
+2. Provide TIERED advice based on severity:
+   - Mild (1-3): Simple home remedies (rest, hydration, stretching)
+   - Moderate (4-6): More specific interventions (warm compress, specific foods, breathing exercises)
+   - Severe (7-10): Suggest consulting a healthcare provider, while offering immediate comfort measures
+3. Connect symptoms to their data when possible:
+   - "I notice you only slept 5 hours - that could be contributing to your headache"
+   - "Your hydration is low today - that might be related"
+   - "You had a high-sugar meal earlier - energy crashes can cause fatigue"
+
+FOOD & NUTRITION AWARENESS:
+- Reference their food intake: "I see you had [meal] today"
+- Connect food to how they feel: "The sugar from breakfast might explain the energy dip"
+- Suggest improvements: "Adding more protein could help sustain your energy"
+- Track patterns: "You tend to feel tired on days with less water intake"
 
 STYLE:
 - Keep responses concise (2-3 short paragraphs or bullet points)
@@ -349,7 +371,7 @@ STYLE:
 
 YOUR ROLE:
 - Help interpret their health metrics
-- Spot patterns in their data
+- Spot patterns in their data (food, sleep, symptoms)
 - Suggest gentle, evidence-based wellness tips
 - Encourage healthy habits they're already doing well
 - Provide educational information only
@@ -420,6 +442,34 @@ export async function POST(request: Request) {
       },
     });
 
+    // Fetch today's food logs
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    const foodLogs = await prisma.foodLog.findMany({
+      where: {
+        userId: user.id,
+        eatenAt: {
+          gte: todayStart,
+          lt: todayEnd,
+        },
+      },
+      orderBy: { eatenAt: "desc" },
+    });
+
+    // Calculate food totals
+    const foodTotals = foodLogs.reduce(
+      (acc, log) => ({
+        calories: acc.calories + log.calories,
+        protein: acc.protein + (log.protein || 0),
+        carbs: acc.carbs + (log.carbs || 0),
+        fat: acc.fat + (log.fat || 0),
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+
     // Build context for AI
     let contextPrompt = "";
     
@@ -439,8 +489,25 @@ export async function POST(request: Request) {
     contextPrompt += "\n\n**Current Status:**";
     if (context?.energyScore) contextPrompt += `\n- Energy: ${context.energyScore}/10`;
     if (context?.sleepHours) contextPrompt += `\n- Sleep: ${context.sleepHours}`;
-    if (context?.hydrationGlasses) contextPrompt += `\n- Hydration: ${context.hydrationGlasses}/6 glasses`;
+    if (context?.hydrationGlasses) contextPrompt += `\n- Hydration: ${context.hydrationGlasses}/8 glasses`;
     if (context?.symptoms?.length > 0) contextPrompt += `\n- Symptoms: ${context.symptoms.join(", ")}`;
+
+    // Today's food intake
+    if (foodLogs.length > 0) {
+      contextPrompt += `\n\n**Today's Food Intake:**`;
+      contextPrompt += `\n- Total calories: ${foodTotals.calories} kcal`;
+      contextPrompt += `\n- Protein: ${Math.round(foodTotals.protein)}g | Carbs: ${Math.round(foodTotals.carbs)}g | Fat: ${Math.round(foodTotals.fat)}g`;
+      contextPrompt += `\n- Meals logged (${foodLogs.length}):`;
+      foodLogs.slice(0, 5).forEach((log) => {
+        const time = new Date(log.eatenAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        contextPrompt += `\n  • ${log.description} (${log.calories} kcal) at ${time}`;
+      });
+      if (foodLogs.length > 5) {
+        contextPrompt += `\n  • ...and ${foodLogs.length - 5} more meals`;
+      }
+    } else {
+      contextPrompt += `\n\n**Today's Food Intake:** No meals logged yet today.`;
+    }
 
     if (userData?.conditions && userData.conditions.length > 0) {
       contextPrompt += `\n\n**Known Conditions:**\n${userData.conditions.map(c => `- ${c.name} (${c.category})`).join("\n")}`;
