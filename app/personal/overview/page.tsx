@@ -329,7 +329,7 @@ export default function PersonalOverviewPage() {
           {foodData && (
             <section className="mb-4">
               <StripCard title="Today's Nutrition" className="h-full">
-                {foodData.logs && foodData.logs.length > 0 ? (
+                {foodData.foodLogs && foodData.foodLogs.length > 0 ? (
                   <div className="space-y-4">
                     {/* Totals Summary */}
                     <div className="grid grid-cols-4 gap-3">
@@ -383,7 +383,7 @@ export default function PersonalOverviewPage() {
                     <div className="space-y-2">
                       <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Meals Today</p>
                       <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {foodData.logs.slice(0, 5).map((log: any) => (
+                        {foodData.foodLogs.slice(0, 5).map((log: any) => (
                           <div 
                             key={log.id} 
                             className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100"
@@ -405,9 +405,9 @@ export default function PersonalOverviewPage() {
                             <span className="text-sm font-semibold text-emerald-600">{log.calories} kcal</span>
                           </div>
                         ))}
-                        {foodData.logs.length > 5 && (
+                        {foodData.foodLogs.length > 5 && (
                           <p className="text-xs text-center text-slate-400">
-                            +{foodData.logs.length - 5} more meals
+                            +{foodData.foodLogs.length - 5} more meals
                           </p>
                         )}
                       </div>
