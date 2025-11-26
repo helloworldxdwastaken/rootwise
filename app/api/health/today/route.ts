@@ -8,14 +8,38 @@ export async function GET() {
     const user = await getCurrentUser();
     const { dateKey: todayKey, dateString } = getLocalDate();
 
-    const todayMetrics = await prisma.userMemory.findUnique({
-      where: {
-        userId_key: {
-          userId: user.id,
-          key: todayKey,
+    // Get today's metrics and patient profile in parallel
+    const [todayMetrics, patientProfile] = await Promise.all([
+      prisma.userMemory.findUnique({
+        where: {
+          userId_key: {
+            userId: user.id,
+            key: todayKey,
+          },
         },
-      },
-    });
+      }),
+      prisma.patientProfile.findUnique({
+        where: { clerkId: user.id },
+      }),
+    ]);
+
+    // Calculate calorie goal based on profile (Mifflin-St Jeor + deficit)
+    let calorieGoal = 2000; // Default
+    if (patientProfile?.weightKg && patientProfile?.heightCm && patientProfile?.dateOfBirth) {
+      const age = Math.floor((Date.now() - new Date(patientProfile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+      const weight = patientProfile.weightKg;
+      const height = patientProfile.heightCm;
+      const isMale = patientProfile.sex === 'MALE';
+      
+      // Mifflin-St Jeor Equation for BMR
+      const bmr = isMale
+        ? (10 * weight) + (6.25 * height) - (5 * age) + 5
+        : (10 * weight) + (6.25 * height) - (5 * age) - 161;
+      
+      // Assume moderate activity (1.55 multiplier) for TDEE, then subtract 500 for deficit
+      const tdee = bmr * 1.55;
+      calorieGoal = Math.round(tdee - 500);
+    }
 
     if (!todayMetrics) {
       // Return default values for new day
@@ -31,6 +55,8 @@ export async function GET() {
         steps: null,
         heartRate: null,
         activeCalories: null,
+        // Calorie goal
+        calorieGoal,
       });
     }
 
@@ -42,11 +68,14 @@ export async function GET() {
       hydrationGlasses: data.hydrationGlasses || 0,
       moodScore: data.moodScore || null,
       symptoms: data.symptoms || [],
+      analyzedSymptoms: data.analyzedSymptoms || [],
       notes: data.notes || null,
       // Activity data from health apps
       steps: data.steps || null,
       heartRate: data.heartRate || null,
       activeCalories: data.activeCalories || null,
+      // Calorie goal
+      calorieGoal,
     });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {

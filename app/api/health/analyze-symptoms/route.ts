@@ -10,7 +10,7 @@ const groq = new Groq({
 
 const SYMPTOM_ANALYSIS_PROMPT = `You are a wellness data analyst for Rootwise.
 
-YOUR TASK: Analyze today's health metrics and recent chat messages to determine likely symptoms.
+YOUR TASK: Analyze today's health metrics, food intake, and recent chat messages to determine likely symptoms and nutritional insights.
 
 OUTPUT FORMAT (JSON only, no other text):
 {
@@ -31,11 +31,12 @@ OUTPUT FORMAT (JSON only, no other text):
 RULES:
 - Only identify symptoms based on CONCRETE DATA
 - Confidence: "high" (clear indicators), "medium" (possible), "low" (speculation)
-- Common symptoms: Fatigue, Headache, Dehydration Risk, Low Mood, Stress, Tension, Poor Sleep Quality
+- Common symptoms: Fatigue, Headache, Dehydration Risk, Low Mood, Stress, Tension, Poor Sleep Quality, Sugar Crash, Overeating, Undereating
+- Consider food intake: high sugar/processed foods → energy crashes, low protein → fatigue, excess calories → sluggishness
 - Don't diagnose medical conditions
 - Be conservative - better to identify less than overdiagnose
 - If data is normal/good, return empty symptoms array
-- Consider correlations: low sleep → fatigue, low water → headache risk
+- Consider correlations: low sleep → fatigue, low water → headache risk, poor diet → low energy
 `;
 
 export async function POST(request: Request) {
@@ -68,6 +69,59 @@ export async function POST(request: Request) {
       take: 20,
     });
 
+    // Get today's food logs
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    const foodLogs = await prisma.foodLog.findMany({
+      where: {
+        userId: user.id,
+        eatenAt: {
+          gte: todayStart,
+          lt: todayEnd,
+        },
+      },
+      orderBy: { eatenAt: "desc" },
+    });
+
+    // Calculate food totals
+    const foodTotals = foodLogs.reduce(
+      (acc, log) => ({
+        calories: acc.calories + log.calories,
+        protein: acc.protein + (log.protein || 0),
+        carbs: acc.carbs + (log.carbs || 0),
+        fat: acc.fat + (log.fat || 0),
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+
+    // Get user profile for calorie goal calculation
+    const patientProfile = await prisma.patientProfile.findUnique({
+      where: { clerkId: user.id },
+    });
+
+    // Calculate BMR and TDEE if we have profile data
+    let calorieGoal = 2000; // Default
+    if (patientProfile?.weightKg && patientProfile?.heightCm && patientProfile?.dateOfBirth) {
+      const age = Math.floor((Date.now() - new Date(patientProfile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+      const weight = patientProfile.weightKg;
+      const height = patientProfile.heightCm;
+      const isMale = patientProfile.sex === 'MALE';
+      
+      // Mifflin-St Jeor Equation for BMR
+      const bmr = isMale
+        ? (10 * weight) + (6.25 * height) - (5 * age) + 5
+        : (10 * weight) + (6.25 * height) - (5 * age) - 161;
+      
+      // Assume moderate activity (1.55 multiplier) for TDEE
+      const tdee = bmr * 1.55;
+      
+      // For deficit, subtract 500 calories (1lb/week loss)
+      calorieGoal = Math.round(tdee - 500);
+    }
+
     // Build context for AI analysis
     const data = (todayMetrics?.value as any) || {};
     
@@ -79,6 +133,19 @@ export async function POST(request: Request) {
         hydrationGlasses: data.hydrationGlasses || 0,
         moodScore: data.moodScore || null,
         manualSymptoms: data.symptoms || [],
+      },
+      nutrition: {
+        calorieGoal,
+        consumed: foodTotals.calories,
+        remaining: calorieGoal - foodTotals.calories,
+        protein: foodTotals.protein,
+        carbs: foodTotals.carbs,
+        fat: foodTotals.fat,
+        meals: foodLogs.map(f => ({
+          description: f.description,
+          calories: f.calories,
+          mealType: f.mealType,
+        })),
       },
       recentChat: recentMessages.map(m => ({
         role: m.role,
