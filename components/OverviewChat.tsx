@@ -11,12 +11,33 @@ type Message = {
   timestamp: Date;
 };
 
+type FoodLog = {
+  id: string;
+  mealType: string;
+  description: string;
+  calories: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  loggedAt: string;
+};
+
+type FoodTotals = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  mealCount: number;
+};
+
 type OverviewChatProps = {
   energyScore?: number | null;
   sleepHours?: string | null;
   hydrationGlasses?: number;
   symptoms?: string[];
   caloriesConsumed?: number;
+  foodLogs?: FoodLog[];
+  foodTotals?: FoodTotals | null;
   onDataUpdated?: () => void;
 };
 
@@ -26,6 +47,8 @@ export function OverviewChat({
   hydrationGlasses = 0,
   symptoms = [],
   caloriesConsumed = 0,
+  foodLogs = [],
+  foodTotals = null,
   onDataUpdated
 }: OverviewChatProps) {
   // Generate personalized welcome message
@@ -89,6 +112,8 @@ export function OverviewChat({
             hydrationGlasses,
             symptoms,
             caloriesConsumed,
+            foodLogs,
+            foodTotals,
           },
         }),
       });

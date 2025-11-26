@@ -729,6 +729,8 @@ export default function PersonalOverviewPage() {
                 hydrationGlasses={hydrationGlasses}
                 symptoms={analyzedSymptoms.map((s: any) => s.name)}
                 caloriesConsumed={foodData?.totals?.calories || 0}
+                foodLogs={foodData?.foodLogs || []}
+                foodTotals={foodData?.totals || null}
                 onDataUpdated={refreshHealthData}
               />
             </div>
