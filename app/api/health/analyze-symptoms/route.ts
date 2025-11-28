@@ -30,6 +30,7 @@ OUTPUT FORMAT (JSON only, no other text):
 }
 
 RULES:
+- Ground analysis ONLY in today's data (the provided date). Do not compare to or reference previous days or future intentions. Ignore chat snippets that clearly refer to other days.
 - Only identify symptoms based on CONCRETE DATA
 - Confidence: "high" (clear indicators), "medium" (possible), "low" (speculation)
 - Common symptoms: Fatigue, Headache, Dehydration Risk, Low Mood, Stress, Tension, Poor Sleep Quality, Sugar Crash, Overeating, Undereating
@@ -254,4 +255,3 @@ Remember: Output ONLY valid JSON with symptoms array. If everything looks normal
     );
   }
 }
-
