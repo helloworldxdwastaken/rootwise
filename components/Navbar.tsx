@@ -11,9 +11,11 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "How it works", href: "/#how-it-works" },
+  { label: "Our Approach", href: "/our-approach" },
   { label: "Safety", href: "/#safety" },
   { label: "Pricing", href: "/#pricing" },
   { label: "FAQ", href: "/#faq" },
+  { label: "Women's Health", href: "/womens-health" },
 ];
 
 const profileMenuLinks = [

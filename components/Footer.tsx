@@ -10,6 +10,7 @@ const footerLinks = {
     { label: "How it works", href: "#how-it-works" },
     { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
+    { label: "Women's Health", href: "/womens-health" },
     { label: "My Profile", href: "/profile" },
     { label: "Careers", href: "/careers" },
   ],
