@@ -120,7 +120,7 @@ export default function WomensHealthPage() {
     <PageShell>
       <SectionContainer className="gap-10">
         {/* Hero Section */}
-        <section className="grid gap-8 md:grid-cols-2 items-center py-8 md:py-12">
+        <section className="grid gap-8 md:grid-cols-2 items-center py-8 md:py-12 lg:py-16">
           {/* Left Side - Text Content */}
           <div className="space-y-6 text-center md:text-left">
             <motion.div
@@ -142,14 +142,14 @@ export default function WomensHealthPage() {
           </div>
 
           {/* Right Side - Two Overlapping Image Cards */}
-          <div className="relative flex items-center justify-center md:justify-end min-h-[500px] md:min-h-[600px]">
+          <div className="relative flex items-center justify-center md:justify-end min-h-[600px] md:min-h-[700px] lg:min-h-[800px] px-4 md:px-0">
             {/* Top Image Card */}
             <motion.div
-              initial={{ opacity: 0, x: 30, rotate: -2 }}
-              animate={{ opacity: 1, x: 0, rotate: -2 }}
+              initial={{ opacity: 0, x: 30, rotate: -3 }}
+              animate={{ opacity: 1, x: 0, rotate: -3 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative w-[280px] md:w-[320px] h-[360px] md:h-[400px] rounded-3xl overflow-hidden shadow-2xl z-10"
-              style={{ transform: "rotate(-2deg)" }}
+              className="relative w-[320px] md:w-[380px] lg:w-[420px] h-[420px] md:h-[500px] lg:h-[560px] rounded-3xl overflow-hidden shadow-2xl z-10"
+              style={{ transform: "rotate(-3deg)" }}
             >
               <Image
                 src="/Women health/womansmilingwithflower.webp"
@@ -159,19 +159,19 @@ export default function WomensHealthPage() {
                 priority
               />
               {/* Quote Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 text-white">
-                <p className="text-base md:text-lg font-medium italic mb-1">"I began listening to my body."</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 md:p-8 text-white">
+                <p className="text-base md:text-lg lg:text-xl font-medium italic mb-1">"I began listening to my body."</p>
                 <p className="text-xs md:text-sm text-white/80">Les A.</p>
               </div>
             </motion.div>
 
             {/* Bottom Image Card - Overlapping */}
             <motion.div
-              initial={{ opacity: 0, x: -30, rotate: 2 }}
-              animate={{ opacity: 1, x: 0, rotate: 2 }}
+              initial={{ opacity: 0, x: -30, rotate: 3 }}
+              animate={{ opacity: 1, x: 0, rotate: 3 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="absolute right-0 md:right-8 top-1/2 -translate-y-1/3 w-[280px] md:w-[320px] h-[360px] md:h-[400px] rounded-3xl overflow-hidden shadow-2xl z-0"
-              style={{ transform: "translateY(-33%) rotate(2deg)" }}
+              className="absolute right-4 md:right-12 lg:right-16 top-1/2 -translate-y-1/4 w-[320px] md:w-[380px] lg:w-[420px] h-[420px] md:h-[500px] lg:h-[560px] rounded-3xl overflow-hidden shadow-2xl z-0"
+              style={{ transform: "translateY(-25%) rotate(3deg)" }}
             >
               <Image
                 src="/Women health/women-taking-coffee-with-friends.webp"
@@ -180,8 +180,8 @@ export default function WomensHealthPage() {
                 className="object-cover"
               />
               {/* Quote Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 text-white">
-                <p className="text-base md:text-lg font-medium italic mb-1">"It helps me be kinder to myself."</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 md:p-8 text-white">
+                <p className="text-base md:text-lg lg:text-xl font-medium italic mb-1">"It helps me be kinder to myself."</p>
                 <p className="text-xs md:text-sm text-white/80">Michelle L.</p>
               </div>
             </motion.div>
