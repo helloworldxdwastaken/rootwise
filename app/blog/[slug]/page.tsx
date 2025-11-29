@@ -465,9 +465,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {/* View All Articles Button */}
         <div className="bg-white py-12 border-t border-[#174D3A]/10">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
-            <Link href="/blog">
-              <Button size="lg">View All Articles</Button>
-            </Link>
+            <Button href="/blog" className="px-8 py-4">View All Articles</Button>
           </div>
         </div>
       </article>
