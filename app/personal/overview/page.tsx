@@ -106,6 +106,7 @@ export default function PersonalOverviewPage() {
   const hydrationGlasses = healthData?.hydrationGlasses || 0;
   const hydrationTarget = 6;
   const greeting = getGreeting();
+  // Use name if available, otherwise use generic fallback (never use email)
   const userName = session?.user?.name || "there";
   const emotionState = getEmotionState(energyScore || 5);
   const energyFill = getEnergyFill(energyScore || 5);
