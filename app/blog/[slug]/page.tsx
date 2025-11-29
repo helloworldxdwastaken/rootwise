@@ -111,7 +111,7 @@ async function getBlogPost(slug: string): Promise<{ post: BlogPost; relatedPosts
       },
     });
 
-    const images = post.images && Array.isArray(post.images) ? post.images : [];
+    const images = post.images && Array.isArray(post.images) ? post.images as string[] : [];
 
     return {
       post: {
