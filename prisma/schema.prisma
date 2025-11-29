@@ -349,3 +349,48 @@ enum NotificationStatus {
   DELIVERED
   FAILED
 }
+
+// ==================== BLOG ====================
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String   @db.Text
+  content     String   @db.Text // Markdown or HTML content
+  featuredImage String? // URL to featured/preview image (first image)
+  images      Json?    // Array of image URLs used in the article
+  category    String
+  date        DateTime @default(now())
+  readTime    String
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  
+  // SEO
+  seoTitle       String?
+  seoDescription String? @db.Text
+  seoKeywords    String? @db.Text
+  
+  // Author tracking
+  authorId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([published])
+  @@index([featured])
+  @@index([category])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // Hashed password
+  email     String?  @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([username])
+}

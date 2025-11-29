@@ -50,6 +50,50 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: "admin-credentials",
+      name: "Admin",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        try {
+          if (!credentials?.username || !credentials?.password) {
+            return null;
+          }
+
+          const admin = await prisma.adminUser.findUnique({
+            where: {
+              username: credentials.username,
+            },
+          });
+
+          if (!admin || !admin.isActive || !admin.password) {
+            return null;
+          }
+
+          const isCorrectPassword = await bcrypt.compare(
+            credentials.password,
+            admin.password
+          );
+
+          if (!isCorrectPassword) {
+            return null;
+          }
+
+          return {
+            id: admin.id,
+            email: admin.email || admin.username,
+            name: admin.name || admin.username,
+            role: "admin",
+          };
+        } catch (error) {
+          console.error("Admin auth error:", error);
+          return null;
+        }
+      },
+    }),
   ],
   pages: {
     signIn: "/auth/login",

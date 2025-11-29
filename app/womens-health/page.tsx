@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { PageShell } from "@/components/PageShell";
 import { SectionContainer } from "@/components/SectionContainer";
 import { Button } from "@/components/Button";
+import { Footer } from "@/components/Footer";
 import { Calendar, TrendingUp, Heart, Shield, AlertCircle, Thermometer, Pill, Package, Activity, Brain, Baby, Smile, Leaf, BookOpen } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 
@@ -122,7 +123,7 @@ export default function WomensHealthPage() {
         {/* Hero Section */}
         <section className="grid gap-8 md:grid-cols-2 items-center -mt-8 md:-mt-12 pb-8 md:pb-12">
           {/* Left Side - Text Content */}
-          <div className="space-y-6 text-center md:text-left">
+          <div className="space-y-6 text-left">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -135,14 +136,14 @@ export default function WomensHealthPage() {
                 <br />
                 trust <em className="italic">your instincts</em>
               </h1>
-              <p className="text-base md:text-lg text-[#4A4A4A] leading-relaxed max-w-xl mx-auto md:mx-0">
+              <p className="text-base md:text-lg text-[#4A4A4A] leading-relaxed max-w-xl">
                 With Rootwise, you'll gain the tools to be the ultimate expert in your health. Spanning stress, sleep, your cycle, pregnancy, and more, Rootwise can provide revolutionary insights into your wellbeing to help you feel your best, every day.
               </p>
             </motion.div>
           </div>
 
           {/* Right Side - Two Overlapping Image Cards */}
-          <div className="relative flex items-center justify-center min-h-[480px] md:min-h-[520px]">
+          <div className="relative flex items-center justify-end min-h-[480px] md:min-h-[520px]">
             {/* Back Image Card */}
             <motion.div
               initial={{ opacity: 0, x: 20, y: 20, rotate: 3 }}
@@ -191,7 +192,7 @@ export default function WomensHealthPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex justify-center"
+          className="flex justify-start"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-[#174D3A]/20 bg-[#174D3A]/10 px-6 py-3 shadow-sm">
             <AlertCircle className="h-5 w-5 text-[#174D3A]" />
@@ -200,12 +201,12 @@ export default function WomensHealthPage() {
         </motion.div>
 
         {/* Features Section */}
-        <section className="space-y-6">
+        <section className="space-y-6 text-left">
           <motion.h3 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-2xl font-semibold text-center text-[#174D3A]"
+            className="text-2xl font-semibold text-[#174D3A]"
           >
             What to Expect
           </motion.h3>
@@ -220,7 +221,7 @@ export default function WomensHealthPage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="rounded-3xl border border-[#174D3A]/10 bg-white/90 p-6 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="rounded-3xl border border-[#174D3A]/10 bg-white/90 p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-left"
                 >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#174D3A] text-white">
                     <Icon className="h-6 w-6" />
@@ -240,9 +241,9 @@ export default function WomensHealthPage() {
           viewport={{ once: true }}
           className="space-y-6 rounded-3xl border border-[#174D3A]/15 bg-gradient-to-br from-white/95 to-[#174D3A]/5 p-8 shadow-lg"
         >
-          <div className="text-center space-y-2">
+          <div className="text-left space-y-2">
             <h3 className="text-2xl font-semibold text-[#174D3A]">Fertility Awareness as a Contraceptive Method</h3>
-            <p className="text-[#4A4A4A] max-w-2xl mx-auto leading-relaxed">
+            <p className="text-[#4A4A4A] max-w-2xl leading-relaxed">
               Fertility Awareness-Based Methods (FABMs) involve tracking natural fertility signals to identify fertile and infertile periods. When used correctly with proper education, these methods can achieve effectiveness rates that exceed many traditional contraceptive methods.
             </p>
           </div>
@@ -255,7 +256,7 @@ export default function WomensHealthPage() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="rounded-2xl border border-[#174D3A]/20 bg-white/80 p-6 hover:shadow-md transition-shadow duration-300"
+                className="rounded-2xl border border-[#174D3A]/20 bg-white/80 p-6 hover:shadow-md transition-shadow duration-300 text-left"
               >
                 <div className="mb-3 flex items-center justify-between">
                   <h4 className="text-lg font-semibold text-[#174D3A]">{method.title}</h4>
@@ -272,7 +273,7 @@ export default function WomensHealthPage() {
 
         {/* Effectiveness Comparison */}
         <section className="space-y-8">
-          <div className="text-center space-y-2">
+          <div className="text-left space-y-2">
             <motion.h3 
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -281,7 +282,7 @@ export default function WomensHealthPage() {
             >
               Effectiveness Comparison
             </motion.h3>
-            <p className="text-[#4A4A4A] max-w-2xl mx-auto leading-relaxed">
+            <p className="text-[#4A4A4A] max-w-2xl leading-relaxed">
               When used correctly with proper education, fertility awareness methods can be highly effective. Here's how they compare:
             </p>
           </div>
@@ -346,9 +347,9 @@ export default function WomensHealthPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-3xl border-2 border-[#174D3A]/30 bg-gradient-to-r from-[#174D3A]/10 to-[#174D3A]/5 p-6 md:p-8"
+            className="rounded-3xl border-2 border-[#174D3A]/30 bg-gradient-to-r from-[#174D3A]/10 to-[#174D3A]/5 p-6 md:p-8 max-w-4xl"
           >
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4 text-left">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-[#174D3A] text-white">
                 <Shield className="h-6 w-6" />
               </div>
@@ -374,7 +375,7 @@ export default function WomensHealthPage() {
             <span className="text-[12rem] md:text-[16rem] leading-none">♀️</span>
           </div>
 
-          <div className="relative z-10">
+          <div className="relative z-10 text-left max-w-3xl">
             <h3 className="text-2xl font-semibold mb-6">Why Track Your Cycle?</h3>
             <ul className="space-y-4 text-white/90">
               <li className="flex items-start gap-4">
@@ -426,7 +427,7 @@ export default function WomensHealthPage() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center space-y-4 py-4"
+          className="text-left space-y-4 py-4"
         >
           <p className="text-[#4A4A4A] text-lg">
             Be the first to know when our Women's Health feature launches.
@@ -436,6 +437,7 @@ export default function WomensHealthPage() {
           </Button>
         </motion.div>
       </SectionContainer>
+      <Footer />
     </PageShell>
   );
 }

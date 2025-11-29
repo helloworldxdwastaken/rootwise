@@ -11,6 +11,7 @@ const footerLinks = {
     { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
     { label: "Women's Health", href: "/womens-health" },
+    { label: "Blog", href: "/blog" },
     { label: "My Profile", href: "/profile" },
     { label: "Careers", href: "/careers" },
   ],
